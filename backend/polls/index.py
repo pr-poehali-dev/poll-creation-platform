@@ -226,8 +226,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 
                 if len(target_audience) > 30:
                     target_audience = target_audience[:30]
-                if len(question) > 50:
-                    question = question[:50]
+                if len(question) > 100:
+                    question = question[:100]
                 
                 if not question or len(options) != 5:
                     return {
@@ -253,6 +253,99 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'statusCode': 201,
                     'headers': headers,
                     'body': json.dumps({'success': True, 'poll_id': poll_id}),
+                    'isBase64Encoded': False
+                }
+            
+            elif action == 'update':
+                poll_id = body_data.get('poll_id')
+                target_audience = body_data.get('target_audience', '')
+                question = body_data.get('question', '')
+                options = body_data.get('options', [])
+                
+                if not poll_id:
+                    return {
+                        'statusCode': 400,
+                        'headers': headers,
+                        'body': json.dumps({'error': 'Poll ID required'}),
+                        'isBase64Encoded': False
+                    }
+                
+                if len(target_audience) > 30:
+                    target_audience = target_audience[:30]
+                if len(question) > 100:
+                    question = question[:100]
+                
+                if not question or len(options) != 5:
+                    return {
+                        'statusCode': 400,
+                        'headers': headers,
+                        'body': json.dumps({'error': 'Invalid poll data'}),
+                        'isBase64Encoded': False
+                    }
+                
+                cur.execute('''
+                    UPDATE polls 
+                    SET target_audience = %s, question = %s,
+                        option1 = %s, option2 = %s, option3 = %s, option4 = %s, option5 = %s
+                    WHERE id = %s AND is_active = true
+                ''', (target_audience, question, options[0], options[1], options[2], options[3], options[4], poll_id))
+                
+                if cur.rowcount == 0:
+                    cur.close()
+                    conn.close()
+                    return {
+                        'statusCode': 404,
+                        'headers': headers,
+                        'body': json.dumps({'error': 'Poll not found'}),
+                        'isBase64Encoded': False
+                    }
+                
+                conn.commit()
+                cur.close()
+                conn.close()
+                
+                return {
+                    'statusCode': 200,
+                    'headers': headers,
+                    'body': json.dumps({'success': True}),
+                    'isBase64Encoded': False
+                }
+            
+            elif action == 'delete':
+                poll_id = body_data.get('poll_id')
+                
+                if not poll_id:
+                    return {
+                        'statusCode': 400,
+                        'headers': headers,
+                        'body': json.dumps({'error': 'Poll ID required'}),
+                        'isBase64Encoded': False
+                    }
+                
+                cur.execute('''
+                    UPDATE polls 
+                    SET is_active = false
+                    WHERE id = %s
+                ''', (poll_id,))
+                
+                if cur.rowcount == 0:
+                    cur.close()
+                    conn.close()
+                    return {
+                        'statusCode': 404,
+                        'headers': headers,
+                        'body': json.dumps({'error': 'Poll not found'}),
+                        'isBase64Encoded': False
+                    }
+                
+                conn.commit()
+                cur.close()
+                conn.close()
+                
+                return {
+                    'statusCode': 200,
+                    'headers': headers,
+                    'body': json.dumps({'success': True}),
                     'isBase64Encoded': False
                 }
         

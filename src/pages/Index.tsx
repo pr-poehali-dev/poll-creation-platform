@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import Icon from '@/components/ui/icon';
 import PollHeader from '@/components/poll/PollHeader';
@@ -40,7 +41,10 @@ export default function Index() {
   const [comment, setComment] = useState('');
   const [loading, setLoading] = useState(true);
   const [showAdmin, setShowAdmin] = useState(false);
+  const [editMode, setEditMode] = useState(false);
+  const [showStatistics, setShowStatistics] = useState(false);
   const [newPoll, setNewPoll] = useState({
+    id: undefined as number | undefined,
     target_audience: '',
     question: '',
     options: ['', '', '', '', '']
@@ -171,6 +175,7 @@ export default function Index() {
           description: 'Новый опрос успешно добавлен'
         });
         setNewPoll({
+          id: undefined,
           target_audience: '',
           question: '',
           options: ['', '', '', '', '']
@@ -185,6 +190,122 @@ export default function Index() {
         variant: 'destructive'
       });
     }
+  };
+
+  const handleEditPoll = (poll: Poll) => {
+    setNewPoll({
+      id: poll.id,
+      target_audience: poll.target_audience,
+      question: poll.question,
+      options: [...poll.options]
+    });
+    setEditMode(true);
+    setShowAdmin(true);
+  };
+
+  const handleUpdatePoll = async () => {
+    if (!newPoll.question || newPoll.options.some(opt => !opt) || !newPoll.id) {
+      toast({
+        title: 'Заполните все поля',
+        description: 'Вопрос и все варианты ответов обязательны',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    try {
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          action: 'update',
+          poll_id: newPoll.id,
+          target_audience: newPoll.target_audience,
+          question: newPoll.question,
+          options: newPoll.options
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        toast({
+          title: 'Опрос обновлён!',
+          description: 'Изменения успешно сохранены'
+        });
+        setNewPoll({
+          id: undefined,
+          target_audience: '',
+          question: '',
+          options: ['', '', '', '', '']
+        });
+        setEditMode(false);
+        setShowAdmin(false);
+        fetchPolls();
+      }
+    } catch (error) {
+      toast({
+        title: 'Ошибка',
+        description: 'Не удалось обновить опрос',
+        variant: 'destructive'
+      });
+    }
+  };
+
+  const handleDeletePoll = async () => {
+    if (!newPoll.id) return;
+
+    if (!confirm('Вы уверены, что хотите удалить этот опрос?')) return;
+
+    try {
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          action: 'delete',
+          poll_id: newPoll.id
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        toast({
+          title: 'Опрос удалён',
+          description: 'Опрос успешно удалён'
+        });
+        setNewPoll({
+          id: undefined,
+          target_audience: '',
+          question: '',
+          options: ['', '', '', '', '']
+        });
+        setEditMode(false);
+        setShowAdmin(false);
+        fetchPolls();
+      }
+    } catch (error) {
+      toast({
+        title: 'Ошибка',
+        description: 'Не удалось удалить опрос',
+        variant: 'destructive'
+      });
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setNewPoll({
+      id: undefined,
+      target_audience: '',
+      question: '',
+      options: ['', '', '', '', '']
+    });
+    setEditMode(false);
+    setShowAdmin(false);
   };
 
   const handleExport = (format: 'pdf' | 'excel') => {
@@ -218,15 +339,30 @@ export default function Index() {
       />
 
       <main className="container mx-auto px-4 py-12">
+        {showStatistics && currentPoll && (
+          <Button 
+            variant="outline" 
+            className="mb-4 gap-2"
+            onClick={() => setShowStatistics(false)}
+          >
+            <Icon name="ArrowLeft" size={18} />
+            Назад к опросу
+          </Button>
+        )}
+
         {showAdmin && (
           <AdminPanel
             newPoll={newPoll}
+            editMode={editMode}
             onUpdatePoll={setNewPoll}
             onCreatePoll={handleCreatePoll}
+            onUpdateExisting={handleUpdatePoll}
+            onDeletePoll={handleDeletePoll}
+            onCancelEdit={handleCancelEdit}
           />
         )}
 
-        {currentPoll && (
+        {currentPoll && !showStatistics && (
           <div className="grid lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2">
               <PollCard
@@ -237,6 +373,14 @@ export default function Index() {
                 onCommentChange={setComment}
                 onVote={handleVote}
               />
+              <Button
+                variant="outline"
+                className="mt-4 gap-2"
+                onClick={() => handleEditPoll(currentPoll)}
+              >
+                <Icon name="Edit" size={18} />
+                Редактировать опрос
+              </Button>
             </div>
 
             <StatisticsPanel 
@@ -246,7 +390,16 @@ export default function Index() {
           </div>
         )}
 
-        {polls.length > 1 && (
+        {currentPoll && showStatistics && (
+          <div className="max-w-4xl mx-auto">
+            <StatisticsPanel 
+              poll={currentPoll} 
+              onExport={handleExport} 
+            />
+          </div>
+        )}
+
+        {polls.length > 1 && !showStatistics && (
           <div className="mt-8">
             <h3 className="text-lg font-semibold mb-4">Другие опросы</h3>
             <div className="grid md:grid-cols-2 gap-4">
