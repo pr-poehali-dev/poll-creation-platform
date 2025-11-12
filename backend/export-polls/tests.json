@@ -1,0 +1,11 @@
+{
+  "tests": [
+    {
+      "name": "Export poll as PDF",
+      "method": "GET",
+      "path": "/?poll_id=1&format=pdf",
+      "expectedStatus": 200,
+      "skipBodyValidation": true
+    }
+  ]
+}

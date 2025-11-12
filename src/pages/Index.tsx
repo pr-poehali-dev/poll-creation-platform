@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
 const API_URL = 'https://functions.poehali.dev/dd334e11-802b-4eba-9f77-b038f347f2b3';
+const EXPORT_URL = 'https://functions.poehali.dev/fe6a3fd2-486b-49d2-bea7-88347a9da3b2';
 
 interface Poll {
   id: number;
@@ -200,6 +201,18 @@ export default function Index() {
   const getPercentage = (count: number, total: number) => {
     if (total === 0) return 0;
     return Math.round((count / total) * 100);
+  };
+
+  const handleExport = (format: 'pdf' | 'excel') => {
+    if (!currentPoll) return;
+    
+    const url = `${EXPORT_URL}?poll_id=${currentPoll.id}&format=${format}`;
+    window.open(url, '_blank');
+    
+    toast({
+      title: 'Экспорт запущен',
+      description: `Файл ${format.toUpperCase()} скоро начнёт загружаться`
+    });
   };
 
   return (
@@ -395,6 +408,27 @@ export default function Index() {
                         </p>
                         <p className="text-xs text-muted-foreground mt-1">Голосов подано</p>
                       </div>
+                    </div>
+
+                    <div className="flex gap-2 mb-4">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleExport('pdf')}
+                        className="flex-1 gap-2"
+                      >
+                        <Icon name="FileText" size={16} />
+                        PDF
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleExport('excel')}
+                        className="flex-1 gap-2"
+                      >
+                        <Icon name="FileSpreadsheet" size={16} />
+                        Excel
+                      </Button>
                     </div>
 
                     <div className="space-y-4">
