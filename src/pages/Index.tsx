@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Card, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import Icon from '@/components/ui/icon';
 import PollHeader from '@/components/poll/PollHeader';
@@ -45,6 +46,9 @@ export default function Index() {
   const [showStatistics, setShowStatistics] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [adminPassword, setAdminPassword] = useState('');
+  const [showAdminLogin, setShowAdminLogin] = useState(false);
   const [newPoll, setNewPoll] = useState({
     id: undefined as number | undefined,
     target_audience: '',
@@ -53,6 +57,13 @@ export default function Index() {
   });
   const { toast } = useToast();
   const userFingerprint = getUserFingerprint();
+
+  useEffect(() => {
+    const savedAdminStatus = localStorage.getItem('isAdmin');
+    if (savedAdminStatus === 'true') {
+      setIsAdmin(true);
+    }
+  }, []);
 
   useEffect(() => {
     fetchPolls();
@@ -95,6 +106,37 @@ export default function Index() {
     if (sortedPolls.length > 0) {
       fetchPollDetails(sortedPolls[0].id);
     }
+  };
+
+  const handleAdminLogin = () => {
+    const correctPassword = 'admin2024';
+    if (adminPassword === correctPassword) {
+      setIsAdmin(true);
+      localStorage.setItem('isAdmin', 'true');
+      setShowAdminLogin(false);
+      setAdminPassword('');
+      toast({
+        title: 'Вход выполнен',
+        description: 'Режим администратора активирован'
+      });
+    } else {
+      toast({
+        title: 'Ошибка',
+        description: 'Неверный пароль',
+        variant: 'destructive'
+      });
+    }
+  };
+
+  const handleAdminLogout = () => {
+    setIsAdmin(false);
+    localStorage.removeItem('isAdmin');
+    setShowAdmin(false);
+    setEditMode(false);
+    toast({
+      title: 'Выход выполнен',
+      description: 'Режим администратора отключён'
+    });
   };
 
   const fetchPollDetails = async (pollId: number) => {
@@ -389,8 +431,11 @@ export default function Index() {
   return (
     <div className="min-h-screen bg-background">
       <PollHeader 
-        showAdmin={showAdmin} 
-        onToggleAdmin={() => setShowAdmin(!showAdmin)} 
+        showAdmin={showAdmin}
+        isAdmin={isAdmin}
+        onToggleAdmin={() => isAdmin && setShowAdmin(!showAdmin)}
+        onAdminLogin={() => setShowAdminLogin(true)}
+        onAdminLogout={handleAdminLogout}
       />
 
       <main className="container mx-auto px-4 py-12">
@@ -429,14 +474,16 @@ export default function Index() {
                 onCommentChange={setComment}
                 onVote={handleVote}
               />
-              <Button
-                variant="outline"
-                className="mt-4 gap-2"
-                onClick={() => handleEditPoll(currentPoll)}
-              >
-                <Icon name="Edit" size={18} />
-                Редактировать опрос
-              </Button>
+              {isAdmin && (
+                <Button
+                  variant="outline"
+                  className="mt-4 gap-2"
+                  onClick={() => handleEditPoll(currentPoll)}
+                >
+                  <Icon name="Edit" size={18} />
+                  Редактировать опрос
+                </Button>
+              )}
             </div>
 
             <StatisticsPanel 
@@ -499,6 +546,43 @@ export default function Index() {
                   </Card>
                 ))}
             </div>
+          </div>
+        )}
+
+        {showAdminLogin && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setShowAdminLogin(false)}>
+            <Card className="w-full max-w-md mx-4" onClick={(e) => e.stopPropagation()}>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Icon name="Lock" size={24} />
+                  Вход для администратора
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Input
+                    type="password"
+                    placeholder="Введите пароль"
+                    value={adminPassword}
+                    onChange={(e) => setAdminPassword(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleAdminLogin()}
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <Button onClick={handleAdminLogin} className="flex-1 gap-2">
+                    <Icon name="Check" size={18} />
+                    Войти
+                  </Button>
+                  <Button onClick={() => {
+                    setShowAdminLogin(false);
+                    setAdminPassword('');
+                  }} variant="outline" className="gap-2">
+                    <Icon name="X" size={18} />
+                    Отмена
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         )}
       </main>
