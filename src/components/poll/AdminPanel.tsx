@@ -33,7 +33,18 @@ export default function AdminPanel({ newPoll, editMode, isSaving = false, onUpda
       </CardHeader>
       <CardContent className="space-y-4">
         <div>
-          <Label htmlFor="target">Кому предназначен (до 30 символов)</Label>
+          <div className="flex items-center justify-between mb-1">
+            <Label htmlFor="target">Кому предназначен</Label>
+            <span className={`text-xs font-medium ${
+              newPoll.target_audience.length > 27 
+                ? 'text-destructive' 
+                : newPoll.target_audience.length > 24 
+                ? 'text-orange-500' 
+                : 'text-muted-foreground'
+            }`}>
+              {newPoll.target_audience.length}/30
+            </span>
+          </div>
           <Input
             id="target"
             placeholder="Например: Всем гражданам"
@@ -43,7 +54,18 @@ export default function AdminPanel({ newPoll, editMode, isSaving = false, onUpda
           />
         </div>
         <div>
-          <Label htmlFor="question">Вопрос (до 100 символов)</Label>
+          <div className="flex items-center justify-between mb-1">
+            <Label htmlFor="question">Вопрос</Label>
+            <span className={`text-xs font-medium ${
+              newPoll.question.length > 90 
+                ? 'text-destructive' 
+                : newPoll.question.length > 80 
+                ? 'text-orange-500' 
+                : 'text-muted-foreground'
+            }`}>
+              {newPoll.question.length}/100
+            </span>
+          </div>
           <Textarea
             id="question"
             placeholder="Введите вопрос опроса"
@@ -53,9 +75,6 @@ export default function AdminPanel({ newPoll, editMode, isSaving = false, onUpda
             rows={3}
             className="resize-none"
           />
-          <p className="text-xs text-muted-foreground mt-1 text-right">
-            {newPoll.question.length}/100
-          </p>
         </div>
         <div className="space-y-2">
           <Label>Варианты ответов</Label>
