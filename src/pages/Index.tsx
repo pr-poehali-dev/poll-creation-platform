@@ -44,6 +44,7 @@ export default function Index() {
   const [editMode, setEditMode] = useState(false);
   const [showStatistics, setShowStatistics] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
   const [newPoll, setNewPoll] = useState({
     id: undefined as number | undefined,
     target_audience: '',
@@ -62,8 +63,9 @@ export default function Index() {
       const response = await fetch(API_URL);
       const data = await response.json();
       if (data.polls && data.polls.length > 0) {
-        setPolls(data.polls);
-        fetchPollDetails(data.polls[0].id);
+        const sortedPolls = sortPolls(data.polls, sortOrder);
+        setPolls(sortedPolls);
+        fetchPollDetails(sortedPolls[0].id);
       }
       setLoading(false);
     } catch (error) {
@@ -73,6 +75,25 @@ export default function Index() {
         variant: 'destructive'
       });
       setLoading(false);
+    }
+  };
+
+  const sortPolls = (pollsToSort: Poll[], order: 'newest' | 'oldest') => {
+    return [...pollsToSort].sort((a, b) => {
+      if (order === 'newest') {
+        return b.id - a.id;
+      } else {
+        return a.id - b.id;
+      }
+    });
+  };
+
+  const handleSortChange = (order: 'newest' | 'oldest') => {
+    setSortOrder(order);
+    const sortedPolls = sortPolls(polls, order);
+    setPolls(sortedPolls);
+    if (sortedPolls.length > 0) {
+      fetchPollDetails(sortedPolls[0].id);
     }
   };
 
@@ -436,7 +457,29 @@ export default function Index() {
 
         {polls.length > 1 && !showStatistics && (
           <div className="mt-8">
-            <h3 className="text-lg font-semibold mb-4">Другие опросы</h3>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold">Другие опросы</h3>
+              <div className="flex gap-2">
+                <Button
+                  variant={sortOrder === 'newest' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => handleSortChange('newest')}
+                  className="gap-2"
+                >
+                  <Icon name="ArrowDownWideNarrow" size={16} />
+                  Новые
+                </Button>
+                <Button
+                  variant={sortOrder === 'oldest' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => handleSortChange('oldest')}
+                  className="gap-2"
+                >
+                  <Icon name="ArrowUpWideNarrow" size={16} />
+                  Старые
+                </Button>
+              </div>
+            </div>
             <div className="grid md:grid-cols-2 gap-4">
               {polls
                 .filter(poll => poll.id !== currentPoll?.id)
