@@ -228,6 +228,16 @@ export default function Index() {
         })
       });
 
+      if (!response.ok) {
+        const errorData = await response.json();
+        toast({
+          title: 'Ошибка',
+          description: errorData.error || 'Не удалось обновить опрос',
+          variant: 'destructive'
+        });
+        return;
+      }
+
       const data = await response.json();
 
       if (data.success) {
@@ -243,9 +253,10 @@ export default function Index() {
         });
         setEditMode(false);
         setShowAdmin(false);
-        fetchPolls();
+        await fetchPolls();
       }
     } catch (error) {
+      console.error('Update error:', error);
       toast({
         title: 'Ошибка',
         description: 'Не удалось обновить опрос',

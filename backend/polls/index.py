@@ -298,7 +298,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     UPDATE polls 
                     SET target_audience = %s, question = %s,
                         option1 = %s, option2 = %s, option3 = %s, option4 = %s, option5 = %s
-                    WHERE id = %s AND is_active = true
+                    WHERE id = %s
                 ''', (target_audience, question, options[0], options[1], options[2], options[3], options[4], poll_id))
                 
                 if cur.rowcount == 0:
@@ -307,7 +307,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     return {
                         'statusCode': 404,
                         'headers': headers,
-                        'body': json.dumps({'error': 'Poll not found'}),
+                        'body': json.dumps({'error': 'Poll not found or already inactive'}),
                         'isBase64Encoded': False
                     }
                 
