@@ -270,6 +270,17 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                         'isBase64Encoded': False
                     }
                 
+                # Convert poll_id to int
+                try:
+                    poll_id = int(poll_id)
+                except (ValueError, TypeError):
+                    return {
+                        'statusCode': 400,
+                        'headers': headers,
+                        'body': json.dumps({'error': 'Invalid poll ID'}),
+                        'isBase64Encoded': False
+                    }
+                
                 if len(target_audience) > 30:
                     target_audience = target_audience[:30]
                 if len(question) > 100:
@@ -319,6 +330,17 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                         'statusCode': 400,
                         'headers': headers,
                         'body': json.dumps({'error': 'Poll ID required'}),
+                        'isBase64Encoded': False
+                    }
+                
+                # Convert poll_id to int
+                try:
+                    poll_id = int(poll_id)
+                except (ValueError, TypeError):
+                    return {
+                        'statusCode': 400,
+                        'headers': headers,
+                        'body': json.dumps({'error': 'Invalid poll ID'}),
                         'isBase64Encoded': False
                     }
                 
