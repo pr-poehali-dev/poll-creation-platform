@@ -222,9 +222,7 @@ export default function Index() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-foreground" style={{ fontFamily: 'Montserrat, sans-serif' }}>Мне интересно</h1>
-              <p className="text-sm text-muted-foreground mt-1" style={{ fontFamily: 'Open Sans, sans-serif' }}>
-                Ваше мнение важно для общества
-              </p>
+              <p className="text-sm text-muted-foreground mt-1" style={{ fontFamily: 'Open Sans, sans-serif' }}>Ваше мнение важно для меня лично, но надеюсь, что и для общества</p>
             </div>
             <Button
               variant={showAdmin ? "default" : "outline"}
