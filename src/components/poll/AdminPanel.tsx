@@ -13,6 +13,7 @@ interface AdminPanelProps {
     options: string[];
   };
   editMode: boolean;
+  isSaving?: boolean;
   onUpdatePoll: (poll: { id?: number; target_audience: string; question: string; options: string[] }) => void;
   onCreatePoll: () => void;
   onUpdateExisting?: () => void;
@@ -20,7 +21,7 @@ interface AdminPanelProps {
   onDeletePoll?: () => void;
 }
 
-export default function AdminPanel({ newPoll, editMode, onUpdatePoll, onCreatePoll, onUpdateExisting, onCancelEdit, onDeletePoll }: AdminPanelProps) {
+export default function AdminPanel({ newPoll, editMode, isSaving = false, onUpdatePoll, onCreatePoll, onUpdateExisting, onCancelEdit, onDeletePoll }: AdminPanelProps) {
   return (
     <Card className="mb-8 border-2 border-accent/20 animate-in fade-in slide-in-from-top-4">
       <CardHeader>
@@ -74,23 +75,41 @@ export default function AdminPanel({ newPoll, editMode, onUpdatePoll, onCreatePo
         <div className="flex gap-2">
           {editMode ? (
             <>
-              <Button onClick={onUpdateExisting} className="flex-1 gap-2">
-                <Icon name="Save" size={18} />
-                Сохранить изменения
+              <Button onClick={onUpdateExisting} className="flex-1 gap-2" disabled={isSaving}>
+                {isSaving ? (
+                  <>
+                    <Icon name="Loader2" size={18} className="animate-spin" />
+                    Сохранение...
+                  </>
+                ) : (
+                  <>
+                    <Icon name="Save" size={18} />
+                    Сохранить изменения
+                  </>
+                )}
               </Button>
-              <Button onClick={onDeletePoll} variant="destructive" className="gap-2">
+              <Button onClick={onDeletePoll} variant="destructive" className="gap-2" disabled={isSaving}>
                 <Icon name="Trash2" size={18} />
                 Удалить
               </Button>
-              <Button onClick={onCancelEdit} variant="outline" className="gap-2">
+              <Button onClick={onCancelEdit} variant="outline" className="gap-2" disabled={isSaving}>
                 <Icon name="X" size={18} />
                 Отмена
               </Button>
             </>
           ) : (
-            <Button onClick={onCreatePoll} className="w-full gap-2">
-              <Icon name="Check" size={18} />
-              Создать опрос
+            <Button onClick={onCreatePoll} className="w-full gap-2" disabled={isSaving}>
+              {isSaving ? (
+                <>
+                  <Icon name="Loader2" size={18} className="animate-spin" />
+                  Создание...
+                </>
+              ) : (
+                <>
+                  <Icon name="Check" size={18} />
+                  Создать опрос
+                </>
+              )}
             </Button>
           )}
         </div>

@@ -43,6 +43,7 @@ export default function Index() {
   const [showAdmin, setShowAdmin] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [showStatistics, setShowStatistics] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [newPoll, setNewPoll] = useState({
     id: undefined as number | undefined,
     target_audience: '',
@@ -153,6 +154,8 @@ export default function Index() {
       return;
     }
 
+    setIsSaving(true);
+
     try {
       const response = await fetch(API_URL, {
         method: 'POST',
@@ -189,6 +192,8 @@ export default function Index() {
         description: 'Не удалось создать опрос',
         variant: 'destructive'
       });
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -212,6 +217,8 @@ export default function Index() {
       });
       return;
     }
+
+    setIsSaving(true);
 
     try {
       const payload = {
@@ -276,6 +283,8 @@ export default function Index() {
         description: 'Не удалось обновить опрос',
         variant: 'destructive'
       });
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -379,6 +388,7 @@ export default function Index() {
           <AdminPanel
             newPoll={newPoll}
             editMode={editMode}
+            isSaving={isSaving}
             onUpdatePoll={setNewPoll}
             onCreatePoll={handleCreatePoll}
             onUpdateExisting={handleUpdatePoll}
