@@ -294,6 +294,9 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                         'isBase64Encoded': False
                     }
                 
+                conn = get_db_connection()
+                cur = conn.cursor()
+                
                 cur.execute('''
                     UPDATE polls 
                     SET target_audience = %s, question = %s,
@@ -343,6 +346,9 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                         'body': json.dumps({'error': 'Invalid poll ID'}),
                         'isBase64Encoded': False
                     }
+                
+                conn = get_db_connection()
+                cur = conn.cursor()
                 
                 cur.execute('''
                     UPDATE polls 
