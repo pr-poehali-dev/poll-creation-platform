@@ -76,19 +76,33 @@ export default function AdminPanel({ newPoll, editMode, isSaving = false, onUpda
             className="resize-none"
           />
         </div>
-        <div className="space-y-2">
+        <div className="space-y-3">
           <Label>Варианты ответов</Label>
           {newPoll.options.map((option, index) => (
-            <Input
-              key={index}
-              placeholder={`Вариант ${index + 1}`}
-              value={option}
-              onChange={(e) => {
-                const newOptions = [...newPoll.options];
-                newOptions[index] = e.target.value;
-                onUpdatePoll({ ...newPoll, options: newOptions });
-              }}
-            />
+            <div key={index}>
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs text-muted-foreground">Вариант {index + 1}</span>
+                <span className={`text-xs font-medium ${
+                  option.length > 45 
+                    ? 'text-destructive' 
+                    : option.length > 40 
+                    ? 'text-orange-500' 
+                    : 'text-muted-foreground'
+                }`}>
+                  {option.length}/50
+                </span>
+              </div>
+              <Input
+                placeholder={`Введите вариант ${index + 1}`}
+                maxLength={50}
+                value={option}
+                onChange={(e) => {
+                  const newOptions = [...newPoll.options];
+                  newOptions[index] = e.target.value;
+                  onUpdatePoll({ ...newPoll, options: newOptions });
+                }}
+              />
+            </div>
           ))}
         </div>
         <div className="flex gap-2">
