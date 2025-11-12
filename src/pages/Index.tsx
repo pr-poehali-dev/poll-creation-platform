@@ -214,22 +214,29 @@ export default function Index() {
     }
 
     try {
+      const payload = {
+        action: 'update',
+        poll_id: newPoll.id,
+        target_audience: newPoll.target_audience,
+        question: newPoll.question,
+        options: newPoll.options
+      };
+      
+      console.log('Sending update:', payload);
+      
       const response = await fetch(API_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-          action: 'update',
-          poll_id: newPoll.id,
-          target_audience: newPoll.target_audience,
-          question: newPoll.question,
-          options: newPoll.options
-        })
+        body: JSON.stringify(payload)
       });
+
+      console.log('Response status:', response.status);
 
       if (!response.ok) {
         const errorData = await response.json();
+        console.error('Error response:', errorData);
         toast({
           title: 'Ошибка',
           description: errorData.error || 'Не удалось обновить опрос',
@@ -239,6 +246,7 @@ export default function Index() {
       }
 
       const data = await response.json();
+      console.log('Success response:', data);
 
       if (data.success) {
         toast({
@@ -254,6 +262,12 @@ export default function Index() {
         setEditMode(false);
         setShowAdmin(false);
         await fetchPolls();
+      } else {
+        toast({
+          title: 'Ошибка',
+          description: 'Сервер не подтвердил обновление',
+          variant: 'destructive'
+        });
       }
     } catch (error) {
       console.error('Update error:', error);
