@@ -46,7 +46,8 @@ export default function PollCard({
   onUserCustomOptionChange, 
   onVote 
 }: PollCardProps) {
-  console.log('PollCard render. Poll ID:', poll.id, 'Options:', poll.options, 'allow_custom:', poll.allow_custom_answers, 'selectedOption:', selectedOption);
+  const isButtonDisabled = poll.allow_custom_answers ? userCustomOptions.every(opt => opt.trim() === '') : !selectedOption;
+  console.log(`Poll #${poll.id}: allow_custom=${poll.allow_custom_answers}, disabled=${isButtonDisabled}, userCustomOptions=`, userCustomOptions);
   
   return (
     <Card className="border-2">
@@ -148,14 +149,10 @@ export default function PollCard({
             </div>
 
             <Button 
-              onClick={() => {
-                console.log('Попытка голосования. selectedOption:', selectedOption, 'poll.allow_custom_answers:', poll.allow_custom_answers, 'userCustomOptions:', userCustomOptions);
-                onVote();
-              }} 
+              onClick={onVote} 
               className="w-full gap-2 py-6 text-lg"
-              disabled={poll.allow_custom_answers ? userCustomOptions.every(opt => opt.trim() === '') : !selectedOption}
+              disabled={isButtonDisabled}
             >
-              {console.log('Button render - disabled:', poll.allow_custom_answers ? userCustomOptions.every(opt => opt.trim() === '') : !selectedOption, 'userCustomOptions:', userCustomOptions)}
               <Icon name="Send" size={20} />
               Отправить голос
             </Button>
