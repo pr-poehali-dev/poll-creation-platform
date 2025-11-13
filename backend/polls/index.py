@@ -285,7 +285,11 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                             'isBase64Encoded': False
                         }
                 
-                options_padded = options + [None] * (10 - len(options))
+                # Pad with empty strings for first 5 options (NOT NULL), None for 6-10
+                if len(options) < 5:
+                    options_padded = options + [''] * (5 - len(options)) + [None] * 5
+                else:
+                    options_padded = options + [None] * (10 - len(options))
                 
                 cur.execute('''
                     INSERT INTO polls 
@@ -365,7 +369,11 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 conn = get_db_connection()
                 cur = conn.cursor()
                 
-                options_padded = options + [None] * (10 - len(options))
+                # Pad with empty strings for first 5 options (NOT NULL), None for 6-10
+                if len(options) < 5:
+                    options_padded = options + [''] * (5 - len(options)) + [None] * 5
+                else:
+                    options_padded = options + [None] * (10 - len(options))
                 
                 cur.execute('''
                     UPDATE polls 
