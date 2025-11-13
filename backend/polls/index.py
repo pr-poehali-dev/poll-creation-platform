@@ -182,11 +182,21 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                         'isBase64Encoded': False
                     }
                 
-                if selected_option and (selected_option < 1 or selected_option > 10):
+                # Проверка selected_option только если он передан
+                if selected_option is not None and (selected_option < 1 or selected_option > 10):
                     return {
                         'statusCode': 400,
                         'headers': headers,
                         'body': json.dumps({'error': 'Invalid option'}),
+                        'isBase64Encoded': False
+                    }
+                
+                # Для custom answers опросов selected_option может быть None
+                if not user_custom_options and not selected_option:
+                    return {
+                        'statusCode': 400,
+                        'headers': headers,
+                        'body': json.dumps({'error': 'Either selected_option or user_custom_options required'}),
                         'isBase64Encoded': False
                     }
                 
