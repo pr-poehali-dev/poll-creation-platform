@@ -541,7 +541,11 @@ export default function Index() {
                         <Icon name="Users" size={14} />
                         {poll.target_audience}
                       </div>
-                      <CardTitle className="text-base">{poll.question}</CardTitle>
+                      <CardTitle 
+                        className={`text-base ${!poll.user_voted ? 'text-green-600' : ''}`}
+                      >
+                        {poll.question}
+                      </CardTitle>
                     </CardHeader>
                   </Card>
                 ))}
