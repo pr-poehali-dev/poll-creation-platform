@@ -131,18 +131,18 @@ export default function AdminPanel({ newPoll, editMode, isSaving = false, onUpda
                 <div className="flex items-center justify-between mb-1">
                   <span className="text-xs text-muted-foreground">Вариант {index + 1}</span>
                   <span className={`text-xs font-medium ${
-                    option.length > 45 
+                    option.length > 27 
                       ? 'text-destructive' 
-                      : option.length > 40 
+                      : option.length > 24 
                       ? 'text-orange-500' 
                       : 'text-muted-foreground'
                   }`}>
-                    {option.length}/50
+                    {option.length}/30
                   </span>
                 </div>
                 <Input
                   placeholder={`Введите вариант ${index + 1}`}
-                  maxLength={50}
+                  maxLength={30}
                   value={option}
                   onChange={(e) => {
                     const newOptions = [...newPoll.options];

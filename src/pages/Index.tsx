@@ -210,7 +210,7 @@ export default function Index() {
   };
 
   const handleCreatePoll = async () => {
-    const filledOptions = newPoll.options.filter(opt => opt.trim() !== '');
+    const filledOptions = newPoll.options.filter(opt => opt.trim() !== '').map(opt => opt.slice(0, 30));
     if (!newPoll.question) {
       toast({
         title: 'Заполните поле',
@@ -234,13 +234,14 @@ export default function Index() {
     try {
       const payload = {
         action: 'create',
-        target_audience: newPoll.target_audience,
-        question: newPoll.question,
+        target_audience: newPoll.target_audience.slice(0, 30),
+        question: newPoll.question.slice(0, 100),
         options: filledOptions,
         allow_custom_answers: newPoll.allow_custom_answers
       };
       
       console.log('Creating poll with payload:', payload);
+      console.log('Total filled options:', filledOptions.length);
       
       const response = await fetch(API_URL, {
         method: 'POST',
@@ -301,7 +302,7 @@ export default function Index() {
   };
 
   const handleUpdatePoll = async () => {
-    const filledOptions = newPoll.options.filter(opt => opt.trim() !== '');
+    const filledOptions = newPoll.options.filter(opt => opt.trim() !== '').map(opt => opt.slice(0, 30));
     if (!newPoll.question || !newPoll.id) {
       toast({
         title: 'Заполните поле',
@@ -326,13 +327,14 @@ export default function Index() {
       const payload = {
         action: 'update',
         poll_id: newPoll.id,
-        target_audience: newPoll.target_audience,
-        question: newPoll.question,
+        target_audience: newPoll.target_audience.slice(0, 30),
+        question: newPoll.question.slice(0, 100),
         options: filledOptions,
         allow_custom_answers: newPoll.allow_custom_answers
       };
       
       console.log('Sending update:', payload);
+      console.log('Total filled options:', filledOptions.length);
       
       const response = await fetch(API_URL, {
         method: 'POST',
