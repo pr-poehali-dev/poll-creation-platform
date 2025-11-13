@@ -148,13 +148,19 @@ export default function PollCard({
             </div>
 
             <Button 
-              onClick={onVote} 
+              onClick={() => {
+                console.log('🔴 BUTTON CLICKED!', { pollId: poll.id, disabled: isButtonDisabled, userCustomOptions });
+                onVote();
+              }} 
               className="w-full gap-2 py-6 text-lg"
               disabled={isButtonDisabled}
             >
               <Icon name="Send" size={20} />
               Отправить голос
             </Button>
+            <p className="text-xs text-muted-foreground text-center mt-2">
+              Debug: disabled={isButtonDisabled ? 'true' : 'false'}, hasFilledOptions={userCustomOptions.some(opt => opt.trim() !== '') ? 'true' : 'false'}
+            </p>
           </>
         ) : (
           <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4">
