@@ -69,6 +69,7 @@ export default function PollCard({
             {poll.allow_custom_answers ? (
               <div className="space-y-3">
                 <Label className="text-sm font-semibold">Введите свои варианты ответов (до 30 символов каждый)</Label>
+                {console.log(`🎯 Рендерим ${userCustomOptions.length} Input полей для опроса #${poll.id}`)}
                 {userCustomOptions.map((option, index) => (
                   <div key={index}>
                     <div className="flex items-center justify-between mb-1">
