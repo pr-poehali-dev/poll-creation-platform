@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Icon from '@/components/ui/icon';
 
@@ -25,9 +26,11 @@ interface PollCardProps {
   selectedOption: number | null;
   comment: string;
   customAnswer: string;
+  userCustomOptions: string[];
   onSelectOption: (option: number) => void;
   onCommentChange: (comment: string) => void;
   onCustomAnswerChange: (answer: string) => void;
+  onUserCustomOptionChange: (index: number, value: string) => void;
   onVote: () => void;
 }
 
@@ -36,9 +39,11 @@ export default function PollCard({
   selectedOption, 
   comment, 
   customAnswer, 
+  userCustomOptions, 
   onSelectOption, 
   onCommentChange, 
-  onCustomAnswerChange, 
+  onCustomAnswerChange,
+  onUserCustomOptionChange, 
   onVote 
 }: PollCardProps) {
   return (
@@ -84,6 +89,34 @@ export default function PollCard({
               </div>
             )}
 
+            {poll.allow_custom_answers && (
+              <div className="space-y-3 pt-4">
+                <Label className="text-sm font-semibold">Введите свои варианты ответов (до 30 символов каждый)</Label>
+                {userCustomOptions.map((option, index) => (
+                  <div key={index}>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-xs text-muted-foreground">Вариант {index + 1}</span>
+                      <span className={`text-xs font-medium ${
+                        option.length > 27 
+                          ? 'text-destructive' 
+                          : option.length > 24 
+                          ? 'text-orange-500' 
+                          : 'text-muted-foreground'
+                      }`}>
+                        {option.length}/30
+                      </span>
+                    </div>
+                    <Input
+                      placeholder={`Введите вариант ${index + 1}`}
+                      maxLength={30}
+                      value={option}
+                      onChange={(e) => onUserCustomOptionChange(index, e.target.value)}
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
+
             <div className="pt-4">
               <Label htmlFor="comment" className="text-sm text-muted-foreground">
                 Комментарий (необязательно, до 100 символов)
@@ -105,7 +138,7 @@ export default function PollCard({
             <Button 
               onClick={onVote} 
               className="w-full gap-2 py-6 text-lg"
-              disabled={!selectedOption}
+              disabled={poll.allow_custom_answers ? userCustomOptions.every(opt => opt.trim() === '') : !selectedOption}
             >
               <Icon name="Send" size={20} />
               Отправить голос

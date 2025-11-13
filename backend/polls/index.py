@@ -172,6 +172,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 selected_option = body_data.get('selected_option')
                 comment = body_data.get('comment', '')
                 custom_answer = body_data.get('custom_answer', '')
+                user_custom_options = body_data.get('user_custom_options', [])
                 
                 if not all([poll_id, user_fingerprint]):
                     return {
@@ -200,6 +201,22 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                         (poll_id, user_fingerprint, selected_option, comment, custom_answer)
                         VALUES (%s, %s, %s, %s, %s)
                     ''', (poll_id, user_fingerprint, selected_option, comment, custom_answer))
+                    
+                    # Сохранение пользовательских вариантов, если есть
+                    if user_custom_options:
+                        for option_text in user_custom_options:
+                            if option_text and len(option_text.strip()) > 0:
+                                option_text_trimmed = option_text[:30]
+                                try:
+                                    cur.execute('''
+                                        INSERT INTO user_custom_options 
+                                        (poll_id, user_fingerprint, option_text)
+                                        VALUES (%s, %s, %s)
+                                    ''', (poll_id, user_fingerprint, option_text_trimmed))
+                                except psycopg2.IntegrityError:
+                                    # Дубликат - пропускаем
+                                    pass
+                    
                     conn.commit()
                     
                     cur.execute('SELECT option1, option2, option3, option4, option5, option6, option7, option8, option9, option10 FROM polls WHERE id = %s', (poll_id,))

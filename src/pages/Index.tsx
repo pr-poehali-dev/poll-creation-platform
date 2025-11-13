@@ -42,6 +42,7 @@ export default function Index() {
   const [selectedOptions, setSelectedOptions] = useState<Record<number, number | null>>({});
   const [comments, setComments] = useState<Record<number, string>>({});
   const [customAnswers, setCustomAnswers] = useState<Record<number, string>>({});
+  const [userCustomOptions, setUserCustomOptions] = useState<Record<number, string[]>>({});
   const [loading, setLoading] = useState(true);
   const [showAdmin, setShowAdmin] = useState(false);
   const [editMode, setEditMode] = useState(false);
@@ -85,6 +86,15 @@ export default function Index() {
         );
         
         setPolls(detailedPolls);
+        
+        // Инициализация пользовательских вариантов для опросов с allow_custom_answers
+        const initialUserOptions: Record<number, string[]> = {};
+        detailedPolls.forEach(poll => {
+          if (poll.allow_custom_answers) {
+            initialUserOptions[poll.id] = ['', '', '', '', '', '', '', '', '', ''];
+          }
+        });
+        setUserCustomOptions(initialUserOptions);
       }
       setLoading(false);
     } catch (error) {
@@ -139,17 +149,31 @@ export default function Index() {
 
 
   const handleVote = async (pollId: number) => {
+    const poll = polls.find(p => p.id === pollId);
     const selectedOption = selectedOptions[pollId];
     const comment = comments[pollId] || '';
     const customAnswer = customAnswers[pollId] || '';
+    const customOptions = userCustomOptions[pollId] || [];
     
-    if (!selectedOption) {
-      toast({
-        title: 'Выберите вариант',
-        description: 'Пожалуйста, выберите один из вариантов ответа',
-        variant: 'destructive'
-      });
-      return;
+    if (poll?.allow_custom_answers) {
+      const filledOptions = customOptions.filter(opt => opt.trim() !== '');
+      if (filledOptions.length === 0) {
+        toast({
+          title: 'Заполните варианты',
+          description: 'Пожалуйста, заполните хотя бы один вариант ответа',
+          variant: 'destructive'
+        });
+        return;
+      }
+    } else {
+      if (!selectedOption) {
+        toast({
+          title: 'Выберите вариант',
+          description: 'Пожалуйста, выберите один из вариантов ответа',
+          variant: 'destructive'
+        });
+        return;
+      }
     }
 
     try {
@@ -164,7 +188,8 @@ export default function Index() {
           user_fingerprint: userFingerprint,
           selected_option: selectedOption,
           comment: comment,
-          custom_answer: customAnswer
+          custom_answer: customAnswer,
+          user_custom_options: poll?.allow_custom_answers ? customOptions.filter(opt => opt.trim() !== '') : undefined
         })
       });
 
@@ -447,7 +472,7 @@ export default function Index() {
       id: undefined,
       target_audience: '',
       question: '',
-      options: ['', ''],
+      options: ['', '', '', '', '', '', '', '', '', ''],
       allow_custom_answers: false
     });
     setEditMode(false);
@@ -509,9 +534,16 @@ export default function Index() {
                     selectedOption={selectedOptions[poll.id] || null}
                     comment={comments[poll.id] || ''}
                     customAnswer={customAnswers[poll.id] || ''}
+                    userCustomOptions={userCustomOptions[poll.id] || ['', '', '', '', '', '', '', '', '', '']}
                     onSelectOption={(option) => setSelectedOptions(prev => ({ ...prev, [poll.id]: option }))}
                     onCommentChange={(comment) => setComments(prev => ({ ...prev, [poll.id]: comment }))}
                     onCustomAnswerChange={(answer) => setCustomAnswers(prev => ({ ...prev, [poll.id]: answer }))}
+                    onUserCustomOptionChange={(index, value) => {
+                      setUserCustomOptions(prev => ({
+                        ...prev,
+                        [poll.id]: (prev[poll.id] || ['', '', '', '', '', '', '', '', '', '']).map((opt, i) => i === index ? value : opt)
+                      }));
+                    }}
                     onVote={() => handleVote(poll.id)}
                   />
                   {isAdmin && (
