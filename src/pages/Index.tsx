@@ -115,6 +115,19 @@ export default function Index() {
     });
   };
 
+  const handleUserCustomOptionChange = (pollId: number) => (index: number, value: string) => {
+    console.log('🚀 handleUserCustomOptionChange called:', { pollId, index, value });
+    setUserCustomOptions(prev => {
+      const currentOptions = prev[pollId] || [];
+      const newOptions = currentOptions.map((opt, i) => i === index ? value : opt);
+      console.log('🚀 Updated userCustomOptions:', newOptions);
+      return {
+        ...prev,
+        [pollId]: newOptions
+      };
+    });
+  };
+
 
 
   const handleAdminLogin = () => {
@@ -540,12 +553,7 @@ export default function Index() {
                     onSelectOption={(option) => setSelectedOptions(prev => ({ ...prev, [poll.id]: option }))}
                     onCommentChange={(comment) => setComments(prev => ({ ...prev, [poll.id]: comment }))}
                     onCustomAnswerChange={(answer) => setCustomAnswers(prev => ({ ...prev, [poll.id]: answer }))}
-                    onUserCustomOptionChange={(index, value) => {
-                      setUserCustomOptions(prev => ({
-                        ...prev,
-                        [poll.id]: (prev[poll.id] || ['', '', '', '', '', '', '', '', '', '']).map((opt, i) => i === index ? value : opt)
-                      }));
-                    }}
+                    onUserCustomOptionChange={handleUserCustomOptionChange(poll.id)}
                     onVote={() => handleVote(poll.id)}
                   />
                   {isAdmin && (
