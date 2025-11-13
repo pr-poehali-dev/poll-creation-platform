@@ -49,26 +49,26 @@ export default function StatisticsPanel({ poll, onExport }: StatisticsPanelProps
   return (
     <Card className="border-2 border-accent/20 h-fit">
       <CardHeader className="bg-accent/5 py-2 px-4">
-        <CardTitle className="flex items-center gap-1.5 text-sm">
-          <Icon name="BarChart3" size={14} />
-          Статистика
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="pt-3 pb-4 px-4 space-y-3">
-        <div className="grid grid-cols-2 gap-1.5">
-          <div className="text-center p-1.5 bg-muted/30 rounded">
-            <Icon name="Users" size={14} className="mx-auto text-primary mb-0.5" />
-            <p className="text-sm font-bold text-foreground">{poll.total_responses || 0}</p>
-            <p className="text-[9px] text-muted-foreground">Ответов</p>
-          </div>
-          <div className="text-center p-1.5 bg-muted/30 rounded">
-            <Icon name="TrendingUp" size={14} className="mx-auto text-accent mb-0.5" />
-            <p className="text-sm font-bold text-foreground">
-              {poll.statistics.reduce((a, b) => a + b, 0)}
-            </p>
-            <p className="text-[9px] text-muted-foreground">Голосов</p>
+        <div className="flex items-center justify-between gap-2">
+          <CardTitle className="flex items-center gap-1.5 text-sm">
+            <Icon name="BarChart3" size={14} />
+            Статистика
+          </CardTitle>
+          <div className="flex gap-2">
+            <div className="flex items-center gap-1">
+              <Icon name="Users" size={12} className="text-primary" />
+              <span className="text-xs font-bold">{poll.total_responses || 0}</span>
+              <span className="text-[9px] text-muted-foreground">отв.</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <Icon name="TrendingUp" size={12} className="text-accent" />
+              <span className="text-xs font-bold">{poll.statistics.reduce((a, b) => a + b, 0)}</span>
+              <span className="text-[9px] text-muted-foreground">гол.</span>
+            </div>
           </div>
         </div>
+      </CardHeader>
+      <CardContent className="pt-3 pb-4 px-4 space-y-3">
 
         <div className="space-y-2">
           <div className="space-y-1">
