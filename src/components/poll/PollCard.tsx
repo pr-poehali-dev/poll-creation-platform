@@ -86,7 +86,10 @@ export default function PollCard({
                       placeholder={`Введите вариант ${index + 1}`}
                       maxLength={30}
                       value={option}
-                      onChange={(e) => onUserCustomOptionChange(index, e.target.value)}
+                      onChange={(e) => {
+                        console.log('Изменение поля', index, 'новое значение:', e.target.value);
+                        onUserCustomOptionChange(index, e.target.value);
+                      }}
                     />
                   </div>
                 ))}
@@ -146,12 +149,13 @@ export default function PollCard({
 
             <Button 
               onClick={() => {
-                console.log('Попытка голосования. selectedOption:', selectedOption, 'poll.allow_custom_answers:', poll.allow_custom_answers);
+                console.log('Попытка голосования. selectedOption:', selectedOption, 'poll.allow_custom_answers:', poll.allow_custom_answers, 'userCustomOptions:', userCustomOptions);
                 onVote();
               }} 
               className="w-full gap-2 py-6 text-lg"
               disabled={poll.allow_custom_answers ? userCustomOptions.every(opt => opt.trim() === '') : !selectedOption}
             >
+              {console.log('Button render - disabled:', poll.allow_custom_answers ? userCustomOptions.every(opt => opt.trim() === '') : !selectedOption, 'userCustomOptions:', userCustomOptions)}
               <Icon name="Send" size={20} />
               Отправить голос
             </Button>
