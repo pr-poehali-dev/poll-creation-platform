@@ -29,6 +29,7 @@ interface StatisticsPanelProps {
 export default function StatisticsPanel({ poll, onExport }: StatisticsPanelProps) {
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
+  const [isExpanded, setIsExpanded] = useState(false);
 
   const getPercentage = (count: number, total: number) => {
     if (total === 0) return 0;
@@ -49,28 +50,40 @@ export default function StatisticsPanel({ poll, onExport }: StatisticsPanelProps
   }
 
   return (
-    <Card className="border-2 border-accent/20 h-fit">
-      <CardHeader className="bg-accent/5 py-2 px-4">
-        <div className="flex items-center justify-between gap-2">
-          <CardTitle className="flex items-center gap-1.5 text-sm">
-            <Icon name="BarChart3" size={14} />
-            Статистика
-          </CardTitle>
-          <div className="flex gap-6">
-            <div className="flex items-center gap-3 px-4">
-              <Icon name="Users" size={24} className="text-primary" />
-              <span className="text-2xl font-bold min-w-[60px]">{poll.total_responses || 0}</span>
-              <span className="text-sm text-muted-foreground">Ответов</span>
+    <div className="space-y-4">
+      <Button
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="w-full gap-2 py-6 text-lg animate-in fade-in slide-in-from-top-4"
+        variant={isExpanded ? "default" : "outline"}
+      >
+        <Icon name="BarChart3" size={20} />
+        {isExpanded ? 'Скрыть статистику' : 'Показать статистику'}
+        <Icon name={isExpanded ? "ChevronUp" : "ChevronDown"} size={20} className="ml-auto" />
+      </Button>
+
+      {isExpanded && (
+        <Card className="border-2 border-accent/20 h-fit animate-in fade-in slide-in-from-top-4">
+          <CardHeader className="bg-accent/5 py-2 px-4">
+            <div className="flex items-center justify-between gap-2">
+              <CardTitle className="flex items-center gap-1.5 text-sm">
+                <Icon name="BarChart3" size={14} />
+                Статистика
+              </CardTitle>
+              <div className="flex gap-6">
+                <div className="flex items-center gap-3 px-4">
+                  <Icon name="Users" size={24} className="text-primary" />
+                  <span className="text-2xl font-bold min-w-[60px]">{poll.total_responses || 0}</span>
+                  <span className="text-sm text-muted-foreground">Ответов</span>
+                </div>
+                <div className="flex items-center gap-3 px-4">
+                  <Icon name="TrendingUp" size={24} className="text-accent" />
+                  <span className="text-2xl font-bold min-w-[60px]">{poll.statistics.reduce((a, b) => a + b, 0)}</span>
+                  <span className="text-sm text-muted-foreground">Голосов</span>
+                </div>
+              </div>
             </div>
-            <div className="flex items-center gap-3 px-4">
-              <Icon name="TrendingUp" size={24} className="text-accent" />
-              <span className="text-2xl font-bold min-w-[60px]">{poll.statistics.reduce((a, b) => a + b, 0)}</span>
-              <span className="text-sm text-muted-foreground">Голосов</span>
-            </div>
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent className="pt-3 pb-4 px-4 space-y-3">
+          </CardHeader>
+          <CardContent className="pt-3 pb-4 px-4 space-y-3">
         <div className="space-y-2">
           <h4 className="font-semibold text-[10px] text-muted-foreground">Распределение голосов</h4>
           {poll.options.map((option, index) => {
@@ -156,5 +169,7 @@ export default function StatisticsPanel({ poll, onExport }: StatisticsPanelProps
         </div>
       </CardContent>
     </Card>
+      )}
+    </div>
   );
 }
