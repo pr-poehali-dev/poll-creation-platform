@@ -71,7 +71,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'question': row[2],
                     'options': options,
                     'created_at': row[13].isoformat() if row[13] else None,
-                    'allow_custom_answers': row[14] if len(row) > 14 else False
+                    'allow_custom_answers': row[15] if len(row) > 15 and row[15] is not None else False
                 }
                 
                 cur.execute('SELECT COUNT(*) FROM poll_responses WHERE poll_id = %s', (poll_id,))
@@ -137,7 +137,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                         'target_audience': row[1],
                         'question': row[2],
                         'options': options,
-                        'allow_custom_answers': row[13] if len(row) > 13 else False
+                        'allow_custom_answers': row[13] if len(row) > 13 and row[13] is not None else False
                     }
                     
                     if user_fingerprint:
