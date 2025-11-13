@@ -90,81 +90,31 @@ export default function AdminPanel({ newPoll, editMode, isSaving = false, onUpda
           </Label>
         </div>
         <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <Label>Варианты ответов {newPoll.allow_custom_answers ? '(необязательно)' : '(минимум 2, максимум 10)'}</Label>
-            <div className="flex gap-2">
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                onClick={() => {
-                  if (newPoll.options.length < 10) {
-                    onUpdatePoll({ ...newPoll, options: [...newPoll.options, ''] });
-                  }
-                }}
-                disabled={newPoll.options.length >= 10}
-                className="gap-1"
-              >
-                <Icon name="Plus" size={14} />
-                Добавить
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                onClick={() => {
-                  if (newPoll.options.length > 2) {
-                    onUpdatePoll({ ...newPoll, options: newPoll.options.slice(0, -1) });
-                  }
-                }}
-                disabled={newPoll.options.length <= 2}
-                className="gap-1"
-              >
-                <Icon name="Minus" size={14} />
-                Удалить
-              </Button>
-            </div>
-          </div>
-          {newPoll.options.map((option, index) => (
-            <div key={index} className="flex gap-2">
-              <div className="flex-1">
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-xs text-muted-foreground">Вариант {index + 1}</span>
-                  <span className={`text-xs font-medium ${
-                    option.length > 27 
-                      ? 'text-destructive' 
-                      : option.length > 24 
-                      ? 'text-orange-500' 
-                      : 'text-muted-foreground'
-                  }`}>
-                    {option.length}/30
-                  </span>
-                </div>
-                <Input
-                  placeholder={`Введите вариант ${index + 1}`}
-                  maxLength={30}
-                  value={option}
-                  onChange={(e) => {
-                    const newOptions = [...newPoll.options];
-                    newOptions[index] = e.target.value;
-                    onUpdatePoll({ ...newPoll, options: newOptions });
-                  }}
-                />
+          <Label>Варианты ответов (10 полей, до 30 символов)</Label>
+          {newPoll.options.slice(0, 10).map((option, index) => (
+            <div key={index} className="animate-in fade-in slide-in-from-left-2" style={{ animationDelay: `${index * 50}ms` }}>
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs text-muted-foreground">Вариант {index + 1}</span>
+                <span className={`text-xs font-medium ${
+                  option.length > 27 
+                    ? 'text-destructive' 
+                    : option.length > 24 
+                    ? 'text-orange-500' 
+                    : 'text-muted-foreground'
+                }`}>
+                  {option.length}/30
+                </span>
               </div>
-              {newPoll.options.length > 2 && (
-                <Button
-                  type="button"
-                  size="icon"
-                  variant="ghost"
-                  onClick={() => {
-                    const newOptions = newPoll.options.filter((_, i) => i !== index);
-                    onUpdatePoll({ ...newPoll, options: newOptions });
-                  }}
-                  className="self-end hover:bg-destructive/10 hover:text-destructive"
-                >
-                  <Icon name="X" size={18} />
-                </Button>
-              )}
+              <Input
+                placeholder={`Введите вариант ${index + 1}`}
+                maxLength={30}
+                value={option}
+                onChange={(e) => {
+                  const newOptions = [...newPoll.options];
+                  newOptions[index] = e.target.value;
+                  onUpdatePoll({ ...newPoll, options: newOptions });
+                }}
+              />
             </div>
           ))}
         </div>

@@ -53,7 +53,7 @@ export default function Index() {
     id: undefined as number | undefined,
     target_audience: '',
     question: '',
-    options: ['', ''],
+    options: ['', '', '', '', '', '', '', '', '', ''],
     allow_custom_answers: false
   });
   const { toast } = useToast();
@@ -143,10 +143,10 @@ export default function Index() {
     const comment = comments[pollId] || '';
     const customAnswer = customAnswers[pollId] || '';
     
-    if (!selectedOption && !customAnswer) {
+    if (!selectedOption) {
       toast({
-        title: 'Выберите вариант или введите свой',
-        description: 'Пожалуйста, выберите один из вариантов или введите свой ответ',
+        title: 'Выберите вариант',
+        description: 'Пожалуйста, выберите один из вариантов ответа',
         variant: 'destructive'
       });
       return;
@@ -264,7 +264,7 @@ export default function Index() {
           id: undefined,
           target_audience: '',
           question: '',
-          options: ['', ''],
+          options: ['', '', '', '', '', '', '', '', '', ''],
           allow_custom_answers: false
         });
         setShowAdmin(false);
@@ -290,11 +290,15 @@ export default function Index() {
   };
 
   const handleEditPoll = (poll: Poll) => {
+    const paddedOptions = [...poll.options];
+    while (paddedOptions.length < 10) {
+      paddedOptions.push('');
+    }
     setNewPoll({
       id: poll.id,
       target_audience: poll.target_audience,
       question: poll.question,
-      options: [...poll.options],
+      options: paddedOptions.slice(0, 10),
       allow_custom_answers: poll.allow_custom_answers || false
     });
     setEditMode(true);
@@ -369,7 +373,7 @@ export default function Index() {
           id: undefined,
           target_audience: '',
           question: '',
-          options: ['', ''],
+          options: ['', '', '', '', '', '', '', '', '', ''],
           allow_custom_answers: false
         });
         setEditMode(false);
@@ -422,7 +426,7 @@ export default function Index() {
           id: undefined,
           target_audience: '',
           question: '',
-          options: ['', ''],
+          options: ['', '', '', '', '', '', '', '', '', ''],
           allow_custom_answers: false
         });
         setEditMode(false);

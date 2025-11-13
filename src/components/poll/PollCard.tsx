@@ -84,26 +84,6 @@ export default function PollCard({
               </div>
             )}
 
-            {poll.allow_custom_answers && (
-              <div className="pt-4">
-                <Label htmlFor="customAnswer" className="text-sm text-muted-foreground">
-                  Ваш вариант ответа (до 100 символов)
-                </Label>
-                <Textarea
-                  id="customAnswer"
-                  placeholder="Введите свой вариант ответа..."
-                  maxLength={100}
-                  value={customAnswer}
-                  onChange={(e) => onCustomAnswerChange(e.target.value)}
-                  className="mt-2 resize-none"
-                  rows={3}
-                />
-                <p className="text-xs text-muted-foreground mt-1 text-right">
-                  {customAnswer.length}/100
-                </p>
-              </div>
-            )}
-
             <div className="pt-4">
               <Label htmlFor="comment" className="text-sm text-muted-foreground">
                 Комментарий (необязательно, до 100 символов)
@@ -125,7 +105,7 @@ export default function PollCard({
             <Button 
               onClick={onVote} 
               className="w-full gap-2 py-6 text-lg"
-              disabled={!selectedOption && !customAnswer}
+              disabled={!selectedOption}
             >
               <Icon name="Send" size={20} />
               Отправить голос
