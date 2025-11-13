@@ -63,7 +63,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                         'isBase64Encoded': False
                     }
                 
-                options = [row[i] for i in range(3, 13) if row[i]]
+                options = [row[i] for i in range(3, 13) if row[i] is not None]
                 
                 poll_data = {
                     'id': row[0],
@@ -131,7 +131,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 
                 polls = []
                 for row in cur.fetchall():
-                    options = [row[i] for i in range(3, 13) if row[i]]
+                    options = [row[i] for i in range(3, 13) if row[i] is not None]
                     poll = {
                         'id': row[0],
                         'target_audience': row[1],
