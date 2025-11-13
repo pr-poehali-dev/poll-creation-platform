@@ -168,8 +168,11 @@ export default function Index() {
     const customAnswer = customAnswers[pollId] || '';
     const customOptions = userCustomOptions[pollId] || [];
     
+    console.log('🎯 handleVote called:', { pollId, selectedOption, customOptions, allowCustom: poll?.allow_custom_answers });
+    
     if (poll?.allow_custom_answers) {
       const filledOptions = customOptions.filter(opt => opt.trim() !== '');
+      console.log('🎯 Custom answers mode, filled options:', filledOptions);
       if (filledOptions.length === 0) {
         toast({
           title: 'Заполните варианты',
@@ -189,21 +192,25 @@ export default function Index() {
       }
     }
 
+    const payload = {
+      action: 'vote',
+      poll_id: pollId,
+      user_fingerprint: userFingerprint,
+      selected_option: selectedOption,
+      comment: comment,
+      custom_answer: customAnswer,
+      user_custom_options: poll?.allow_custom_answers ? customOptions.filter(opt => opt.trim() !== '') : undefined
+    };
+    
+    console.log('🚀 Sending vote payload:', payload);
+
     try {
       const response = await fetch(API_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-          action: 'vote',
-          poll_id: pollId,
-          user_fingerprint: userFingerprint,
-          selected_option: selectedOption,
-          comment: comment,
-          custom_answer: customAnswer,
-          user_custom_options: poll?.allow_custom_answers ? customOptions.filter(opt => opt.trim() !== '') : undefined
-        })
+        body: JSON.stringify(payload)
       });
 
       const data = await response.json();
