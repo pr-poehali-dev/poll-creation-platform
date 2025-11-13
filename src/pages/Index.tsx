@@ -447,32 +447,36 @@ export default function Index() {
           />
         )}
 
-        <div className="max-w-3xl mx-auto space-y-6">
+        <div className="max-w-7xl mx-auto space-y-8">
           {polls.map((poll) => (
             <div key={poll.id}>
-              <PollCard
-                poll={poll}
-                selectedOption={selectedOptions[poll.id] || null}
-                comment={comments[poll.id] || ''}
-                onSelectOption={(option) => setSelectedOptions(prev => ({ ...prev, [poll.id]: option }))}
-                onCommentChange={(comment) => setComments(prev => ({ ...prev, [poll.id]: comment }))}
-                onVote={() => handleVote(poll.id)}
-              />
-              {isAdmin && (
-                <Button
-                  variant="outline"
-                  className="mt-4 gap-2"
-                  onClick={() => handleEditPoll(poll)}
-                >
-                  <Icon name="Edit" size={18} />
-                  Редактировать опрос
-                </Button>
-              )}
-              <div className="mt-6">
-                <StatisticsPanel 
-                  poll={poll} 
-                  onExport={(format) => handleExport(poll.id, format)} 
-                />
+              <div className="grid lg:grid-cols-2 gap-6">
+                <div>
+                  <PollCard
+                    poll={poll}
+                    selectedOption={selectedOptions[poll.id] || null}
+                    comment={comments[poll.id] || ''}
+                    onSelectOption={(option) => setSelectedOptions(prev => ({ ...prev, [poll.id]: option }))}
+                    onCommentChange={(comment) => setComments(prev => ({ ...prev, [poll.id]: comment }))}
+                    onVote={() => handleVote(poll.id)}
+                  />
+                  {isAdmin && (
+                    <Button
+                      variant="outline"
+                      className="mt-4 gap-2"
+                      onClick={() => handleEditPoll(poll)}
+                    >
+                      <Icon name="Edit" size={18} />
+                      Редактировать опрос
+                    </Button>
+                  )}
+                </div>
+                <div>
+                  <StatisticsPanel 
+                    poll={poll} 
+                    onExport={(format) => handleExport(poll.id, format)} 
+                  />
+                </div>
               </div>
             </div>
           ))}
