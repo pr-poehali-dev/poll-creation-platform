@@ -37,15 +37,12 @@ const getUserFingerprint = () => {
 
 export default function Index() {
   const [polls, setPolls] = useState<Poll[]>([]);
-  const [currentPoll, setCurrentPoll] = useState<Poll | null>(null);
-  const [selectedOption, setSelectedOption] = useState<number | null>(null);
-  const [comment, setComment] = useState('');
+  const [selectedOptions, setSelectedOptions] = useState<Record<number, number | null>>({});
+  const [comments, setComments] = useState<Record<number, string>>({});
   const [loading, setLoading] = useState(true);
   const [showAdmin, setShowAdmin] = useState(false);
   const [editMode, setEditMode] = useState(false);
-  const [showStatistics, setShowStatistics] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
   const [isAdmin, setIsAdmin] = useState(false);
   const [adminPassword, setAdminPassword] = useState('');
   const [showAdminLogin, setShowAdminLogin] = useState(false);
@@ -74,9 +71,16 @@ export default function Index() {
       const response = await fetch(`${API_URL}?user_fingerprint=${userFingerprint}`);
       const data = await response.json();
       if (data.polls && data.polls.length > 0) {
-        const sortedPolls = sortPolls(data.polls, sortOrder);
-        setPolls(sortedPolls);
-        fetchPollDetails(sortedPolls[0].id);
+        const sortedPolls = sortPolls(data.polls, 'newest');
+        
+        const detailedPolls = await Promise.all(
+          sortedPolls.map(async (poll) => {
+            const detailResponse = await fetch(`${API_URL}?poll_id=${poll.id}&user_fingerprint=${userFingerprint}`);
+            return await detailResponse.json();
+          })
+        );
+        
+        setPolls(detailedPolls);
       }
       setLoading(false);
     } catch (error) {
@@ -91,22 +95,11 @@ export default function Index() {
 
   const sortPolls = (pollsToSort: Poll[], order: 'newest' | 'oldest') => {
     return [...pollsToSort].sort((a, b) => {
-      if (order === 'newest') {
-        return b.id - a.id;
-      } else {
-        return a.id - b.id;
-      }
+      return b.id - a.id;
     });
   };
 
-  const handleSortChange = (order: 'newest' | 'oldest') => {
-    setSortOrder(order);
-    const sortedPolls = sortPolls(polls, order);
-    setPolls(sortedPolls);
-    if (sortedPolls.length > 0) {
-      fetchPollDetails(sortedPolls[0].id);
-    }
-  };
+
 
   const handleAdminLogin = () => {
     const correctPassword = 'admin2024';
@@ -139,22 +132,13 @@ export default function Index() {
     });
   };
 
-  const fetchPollDetails = async (pollId: number) => {
-    try {
-      const response = await fetch(`${API_URL}?poll_id=${pollId}&user_fingerprint=${userFingerprint}`);
-      const data = await response.json();
-      setCurrentPoll(data);
-    } catch (error) {
-      toast({
-        title: 'Ошибка',
-        description: 'Не удалось загрузить детали опроса',
-        variant: 'destructive'
-      });
-    }
-  };
 
-  const handleVote = async () => {
-    if (!selectedOption || !currentPoll) {
+
+  const handleVote = async (pollId: number) => {
+    const selectedOption = selectedOptions[pollId];
+    const comment = comments[pollId] || '';
+    
+    if (!selectedOption) {
       toast({
         title: 'Выберите вариант',
         description: 'Пожалуйста, выберите один из вариантов ответа',
@@ -171,7 +155,7 @@ export default function Index() {
         },
         body: JSON.stringify({
           action: 'vote',
-          poll_id: currentPoll.id,
+          poll_id: pollId,
           user_fingerprint: userFingerprint,
           selected_option: selectedOption,
           comment: comment
@@ -194,9 +178,20 @@ export default function Index() {
           title: 'Голос учтён!',
           description: 'Спасибо за участие в опросе'
         });
-        fetchPollDetails(currentPoll.id);
-        setSelectedOption(null);
-        setComment('');
+        
+        const updatedPolls = await Promise.all(
+          polls.map(async (poll) => {
+            if (poll.id === pollId) {
+              const detailResponse = await fetch(`${API_URL}?poll_id=${poll.id}&user_fingerprint=${userFingerprint}`);
+              return await detailResponse.json();
+            }
+            return poll;
+          })
+        );
+        setPolls(updatedPolls);
+        
+        setSelectedOptions(prev => ({ ...prev, [pollId]: null }));
+        setComments(prev => ({ ...prev, [pollId]: '' }));
       }
     } catch (error) {
       toast({
@@ -407,10 +402,8 @@ export default function Index() {
     setShowAdmin(false);
   };
 
-  const handleExport = (format: 'pdf' | 'excel') => {
-    if (!currentPoll) return;
-    
-    const url = `${EXPORT_URL}?poll_id=${currentPoll.id}&format=${format}`;
+  const handleExport = (pollId: number, format: 'pdf' | 'excel') => {
+    const url = `${EXPORT_URL}?poll_id=${pollId}&format=${format}`;
     window.open(url, '_blank');
     
     toast({
@@ -441,17 +434,6 @@ export default function Index() {
       />
 
       <main className="container mx-auto px-4 py-12">
-        {showStatistics && currentPoll && (
-          <Button 
-            variant="outline" 
-            className="mb-4 gap-2"
-            onClick={() => setShowStatistics(false)}
-          >
-            <Icon name="ArrowLeft" size={18} />
-            Назад к опросу
-          </Button>
-        )}
-
         {showAdmin && (
           <AdminPanel
             newPoll={newPoll}
@@ -465,95 +447,36 @@ export default function Index() {
           />
         )}
 
-        {currentPoll && !showStatistics && (
-          <div className="grid lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2">
+        <div className="max-w-3xl mx-auto space-y-6">
+          {polls.map((poll) => (
+            <div key={poll.id}>
               <PollCard
-                poll={currentPoll}
-                selectedOption={selectedOption}
-                comment={comment}
-                onSelectOption={setSelectedOption}
-                onCommentChange={setComment}
-                onVote={handleVote}
+                poll={poll}
+                selectedOption={selectedOptions[poll.id] || null}
+                comment={comments[poll.id] || ''}
+                onSelectOption={(option) => setSelectedOptions(prev => ({ ...prev, [poll.id]: option }))}
+                onCommentChange={(comment) => setComments(prev => ({ ...prev, [poll.id]: comment }))}
+                onVote={() => handleVote(poll.id)}
               />
               {isAdmin && (
                 <Button
                   variant="outline"
                   className="mt-4 gap-2"
-                  onClick={() => handleEditPoll(currentPoll)}
+                  onClick={() => handleEditPoll(poll)}
                 >
                   <Icon name="Edit" size={18} />
                   Редактировать опрос
                 </Button>
               )}
-            </div>
-
-            <StatisticsPanel 
-              poll={currentPoll} 
-              onExport={handleExport} 
-            />
-          </div>
-        )}
-
-        {currentPoll && showStatistics && (
-          <div className="max-w-4xl mx-auto">
-            <StatisticsPanel 
-              poll={currentPoll} 
-              onExport={handleExport} 
-            />
-          </div>
-        )}
-
-        {polls.length > 1 && !showStatistics && (
-          <div className="mt-8">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold">Другие опросы</h3>
-              <div className="flex gap-2">
-                <Button
-                  variant={sortOrder === 'newest' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => handleSortChange('newest')}
-                  className="gap-2"
-                >
-                  <Icon name="ArrowDownWideNarrow" size={16} />
-                  Новые
-                </Button>
-                <Button
-                  variant={sortOrder === 'oldest' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => handleSortChange('oldest')}
-                  className="gap-2"
-                >
-                  <Icon name="ArrowUpWideNarrow" size={16} />
-                  Старые
-                </Button>
+              <div className="mt-6">
+                <StatisticsPanel 
+                  poll={poll} 
+                  onExport={(format) => handleExport(poll.id, format)} 
+                />
               </div>
             </div>
-            <div className="grid md:grid-cols-2 gap-4">
-              {polls
-                .filter(poll => poll.id !== currentPoll?.id)
-                .map(poll => (
-                  <Card 
-                    key={poll.id} 
-                    className="cursor-pointer hover:shadow-lg transition-all duration-300 hover:scale-105"
-                    onClick={() => fetchPollDetails(poll.id)}
-                  >
-                    <CardHeader>
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
-                        <Icon name="Users" size={14} />
-                        {poll.target_audience}
-                      </div>
-                      <CardTitle 
-                        className={`text-base ${!poll.user_voted ? 'text-green-600' : ''}`}
-                      >
-                        {poll.question}
-                      </CardTitle>
-                    </CardHeader>
-                  </Card>
-                ))}
-            </div>
-          </div>
-        )}
+          ))}
+        </div>
 
         {showAdminLogin && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setShowAdminLogin(false)}>
