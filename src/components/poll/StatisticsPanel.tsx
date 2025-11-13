@@ -98,68 +98,57 @@ export default function StatisticsPanel({ poll, onExport }: StatisticsPanelProps
           })}
         </div>
 
-        <div className="space-y-2">
-          <div className="flex gap-2">
-            <div className="flex-1 space-y-1">
-              <Label className="text-[9px] text-muted-foreground">Фильтр по датам</Label>
-              <div className="flex gap-1">
-                <Input
-                  type="date"
-                  value={dateFrom}
-                  onChange={(e) => setDateFrom(e.target.value)}
-                  placeholder="От"
-                  className="text-[10px] h-7 px-2"
-                />
-                <Input
-                  type="date"
-                  value={dateTo}
-                  onChange={(e) => setDateTo(e.target.value)}
-                  placeholder="До"
-                  className="text-[10px] h-7 px-2"
-                />
-              </div>
-            </div>
-            <div className="flex gap-1 items-end">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleApplyDateFilter}
-                className="gap-1 h-7 text-[10px] px-2"
-                disabled={!dateFrom || !dateTo}
-              >
-                <Icon name="Filter" size={10} />
-                Применить
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleResetDateFilter}
-                className="gap-1 h-7 text-[10px] px-2"
-                disabled={!dateFrom && !dateTo}
-              >
-                <Icon name="X" size={10} />
-              </Button>
-            </div>
-          </div>
-
-          <div className="flex gap-1">
+        <div className="flex gap-2 items-center">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onExport('pdf')}
+            className="gap-1 h-7 text-[10px] px-2"
+          >
+            <Icon name="FileText" size={12} />
+            PDF
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onExport('excel')}
+            className="gap-1 h-7 text-[10px] px-2"
+          >
+            <Icon name="FileSpreadsheet" size={12} />
+            Excel
+          </Button>
+          <div className="flex gap-1 flex-1">
+            <Input
+              type="date"
+              value={dateFrom}
+              onChange={(e) => setDateFrom(e.target.value)}
+              placeholder="От"
+              className="text-[10px] h-7 px-2"
+            />
+            <Input
+              type="date"
+              value={dateTo}
+              onChange={(e) => setDateTo(e.target.value)}
+              placeholder="До"
+              className="text-[10px] h-7 px-2"
+            />
             <Button
               variant="outline"
               size="sm"
-              onClick={() => onExport('pdf')}
-              className="flex-1 gap-1 h-7 text-[10px] px-2"
+              onClick={handleApplyDateFilter}
+              className="gap-1 h-7 text-[10px] px-2"
+              disabled={!dateFrom || !dateTo}
             >
-              <Icon name="FileText" size={12} />
-              PDF
+              <Icon name="Filter" size={10} />
             </Button>
             <Button
-              variant="outline"
+              variant="ghost"
               size="sm"
-              onClick={() => onExport('excel')}
-              className="flex-1 gap-1 h-7 text-[10px] px-2"
+              onClick={handleResetDateFilter}
+              className="gap-1 h-7 text-[10px] px-2"
+              disabled={!dateFrom && !dateTo}
             >
-              <Icon name="FileSpreadsheet" size={12} />
-              Excel
+              <Icon name="X" size={10} />
             </Button>
           </div>
         </div>
