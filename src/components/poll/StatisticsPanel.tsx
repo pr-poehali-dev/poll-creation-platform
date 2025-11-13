@@ -78,11 +78,11 @@ export default function StatisticsPanel({ poll, onExport }: StatisticsPanelProps
             
             return (
               <div key={index} className="space-y-0.5">
-                <div className="flex items-center justify-between text-[10px]">
-                  <span className="text-foreground truncate max-w-[120px]" title={option}>
+                <div className="flex items-center justify-between text-[10px] gap-2">
+                  <span className="text-foreground truncate flex-1" title={option}>
                     {option}
                   </span>
-                  <span className="font-semibold text-primary">{percentage}%</span>
+                  <span className="font-semibold text-primary whitespace-nowrap">{percentage}%</span>
                 </div>
                 <div className="h-1 bg-muted rounded-full overflow-hidden">
                   <div
