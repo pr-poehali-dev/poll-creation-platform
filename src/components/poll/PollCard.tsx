@@ -88,8 +88,12 @@ export default function PollCard({
                       maxLength={30}
                       value={option}
                       onChange={(e) => {
-                        console.log('Изменение поля', index, 'новое значение:', e.target.value);
-                        onUserCustomOptionChange(index, e.target.value);
+                        const newValue = e.target.value;
+                        console.log('🔥 INPUT onChange FIRED!', { index, newValue, pollId: poll.id });
+                        onUserCustomOptionChange(index, newValue);
+                      }}
+                      onInput={(e) => {
+                        console.log('🔥 onInput FIRED!', e);
                       }}
                     />
                   </div>
