@@ -92,8 +92,10 @@ export default function Index() {
         detailedPolls.forEach(poll => {
           if (poll.allow_custom_answers) {
             initialUserOptions[poll.id] = ['', '', '', '', '', '', '', '', '', ''];
+            console.log('Инициализация userCustomOptions для опроса', poll.id);
           }
         });
+        console.log('Final initialUserOptions:', initialUserOptions);
         setUserCustomOptions(initialUserOptions);
       }
       setLoading(false);
