@@ -46,7 +46,9 @@ export default function PollCard({
   onUserCustomOptionChange, 
   onVote 
 }: PollCardProps) {
-  const isButtonDisabled = poll.allow_custom_answers ? userCustomOptions.every(opt => opt.trim() === '') : !selectedOption;
+  const isButtonDisabled = poll.allow_custom_answers 
+    ? !userCustomOptions.some(opt => opt.trim() !== '') 
+    : !selectedOption;
   console.log(`Poll #${poll.id}: allow_custom=${poll.allow_custom_answers}, disabled=${isButtonDisabled}, userCustomOptions=`, userCustomOptions);
   
   return (
