@@ -11,10 +11,11 @@ interface AdminPanelProps {
     target_audience: string;
     question: string;
     options: string[];
+    allow_custom_answers?: boolean;
   };
   editMode: boolean;
   isSaving?: boolean;
-  onUpdatePoll: (poll: { id?: number; target_audience: string; question: string; options: string[] }) => void;
+  onUpdatePoll: (poll: { id?: number; target_audience: string; question: string; options: string[]; allow_custom_answers?: boolean }) => void;
   onCreatePoll: () => void;
   onUpdateExisting?: () => void;
   onCancelEdit?: () => void;
@@ -76,9 +77,21 @@ export default function AdminPanel({ newPoll, editMode, isSaving = false, onUpda
             className="resize-none"
           />
         </div>
+        <div className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            id="allow_custom"
+            checked={newPoll.allow_custom_answers || false}
+            onChange={(e) => onUpdatePoll({ ...newPoll, allow_custom_answers: e.target.checked })}
+            className="w-4 h-4 rounded border-input"
+          />
+          <Label htmlFor="allow_custom" className="cursor-pointer">
+            Разрешить посетителям вводить свои варианты ответов
+          </Label>
+        </div>
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <Label>Варианты ответов (минимум 2, максимум 10)</Label>
+            <Label>Варианты ответов {newPoll.allow_custom_answers ? '(необязательно)' : '(минимум 2, максимум 10)'}</Label>
             <div className="flex gap-2">
               <Button
                 type="button"

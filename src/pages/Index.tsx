@@ -20,9 +20,11 @@ interface Poll {
   total_responses?: number;
   user_voted?: boolean;
   statistics?: number[];
+  allow_custom_answers?: boolean;
   user_answer?: {
     option: number;
     comment: string;
+    custom_answer?: string;
   };
 }
 
@@ -39,6 +41,7 @@ export default function Index() {
   const [polls, setPolls] = useState<Poll[]>([]);
   const [selectedOptions, setSelectedOptions] = useState<Record<number, number | null>>({});
   const [comments, setComments] = useState<Record<number, string>>({});
+  const [customAnswers, setCustomAnswers] = useState<Record<number, string>>({});
   const [loading, setLoading] = useState(true);
   const [showAdmin, setShowAdmin] = useState(false);
   const [editMode, setEditMode] = useState(false);
@@ -50,7 +53,8 @@ export default function Index() {
     id: undefined as number | undefined,
     target_audience: '',
     question: '',
-    options: ['', '']
+    options: ['', ''],
+    allow_custom_answers: false
   });
   const { toast } = useToast();
   const userFingerprint = getUserFingerprint();
@@ -137,11 +141,12 @@ export default function Index() {
   const handleVote = async (pollId: number) => {
     const selectedOption = selectedOptions[pollId];
     const comment = comments[pollId] || '';
+    const customAnswer = customAnswers[pollId] || '';
     
-    if (!selectedOption) {
+    if (!selectedOption && !customAnswer) {
       toast({
-        title: 'Выберите вариант',
-        description: 'Пожалуйста, выберите один из вариантов ответа',
+        title: 'Выберите вариант или введите свой',
+        description: 'Пожалуйста, выберите один из вариантов или введите свой ответ',
         variant: 'destructive'
       });
       return;
@@ -158,7 +163,8 @@ export default function Index() {
           poll_id: pollId,
           user_fingerprint: userFingerprint,
           selected_option: selectedOption,
-          comment: comment
+          comment: comment,
+          custom_answer: customAnswer
         })
       });
 
@@ -192,6 +198,7 @@ export default function Index() {
         
         setSelectedOptions(prev => ({ ...prev, [pollId]: null }));
         setComments(prev => ({ ...prev, [pollId]: '' }));
+        setCustomAnswers(prev => ({ ...prev, [pollId]: '' }));
       }
     } catch (error) {
       toast({
@@ -204,10 +211,19 @@ export default function Index() {
 
   const handleCreatePoll = async () => {
     const filledOptions = newPoll.options.filter(opt => opt.trim() !== '');
-    if (!newPoll.question || filledOptions.length < 2) {
+    if (!newPoll.question) {
       toast({
-        title: 'Заполните все поля',
-        description: 'Вопрос и минимум 2 варианта ответов обязательны',
+        title: 'Заполните поле',
+        description: 'Вопрос обязателен',
+        variant: 'destructive'
+      });
+      return;
+    }
+    
+    if (!newPoll.allow_custom_answers && filledOptions.length < 2) {
+      toast({
+        title: 'Заполните варианты',
+        description: 'Минимум 2 варианта ответов обязательны',
         variant: 'destructive'
       });
       return;
@@ -225,7 +241,8 @@ export default function Index() {
           action: 'create',
           target_audience: newPoll.target_audience,
           question: newPoll.question,
-          options: filledOptions
+          options: filledOptions,
+          allow_custom_answers: newPoll.allow_custom_answers
         })
       });
 
@@ -261,7 +278,8 @@ export default function Index() {
       id: poll.id,
       target_audience: poll.target_audience,
       question: poll.question,
-      options: [...poll.options]
+      options: [...poll.options],
+      allow_custom_answers: poll.allow_custom_answers || false
     });
     setEditMode(true);
     setShowAdmin(true);
@@ -269,10 +287,19 @@ export default function Index() {
 
   const handleUpdatePoll = async () => {
     const filledOptions = newPoll.options.filter(opt => opt.trim() !== '');
-    if (!newPoll.question || filledOptions.length < 2 || !newPoll.id) {
+    if (!newPoll.question || !newPoll.id) {
       toast({
-        title: 'Заполните все поля',
-        description: 'Вопрос и минимум 2 варианта ответов обязательны',
+        title: 'Заполните поле',
+        description: 'Вопрос обязателен',
+        variant: 'destructive'
+      });
+      return;
+    }
+    
+    if (!newPoll.allow_custom_answers && filledOptions.length < 2) {
+      toast({
+        title: 'Заполните варианты',
+        description: 'Минимум 2 варианта ответов обязательны',
         variant: 'destructive'
       });
       return;
@@ -286,7 +313,8 @@ export default function Index() {
         poll_id: newPoll.id,
         target_audience: newPoll.target_audience,
         question: newPoll.question,
-        options: filledOptions
+        options: filledOptions,
+        allow_custom_answers: newPoll.allow_custom_answers
       };
       
       console.log('Sending update:', payload);
@@ -324,7 +352,8 @@ export default function Index() {
           id: undefined,
           target_audience: '',
           question: '',
-          options: ['', '', '', '', '']
+          options: ['', ''],
+          allow_custom_answers: false
         });
         setEditMode(false);
         setShowAdmin(false);
@@ -376,7 +405,8 @@ export default function Index() {
           id: undefined,
           target_audience: '',
           question: '',
-          options: ['', '', '', '', '']
+          options: ['', ''],
+          allow_custom_answers: false
         });
         setEditMode(false);
         setShowAdmin(false);
@@ -396,7 +426,8 @@ export default function Index() {
       id: undefined,
       target_audience: '',
       question: '',
-      options: ['', '']
+      options: ['', ''],
+      allow_custom_answers: false
     });
     setEditMode(false);
     setShowAdmin(false);
@@ -456,8 +487,10 @@ export default function Index() {
                     poll={poll}
                     selectedOption={selectedOptions[poll.id] || null}
                     comment={comments[poll.id] || ''}
+                    customAnswer={customAnswers[poll.id] || ''}
                     onSelectOption={(option) => setSelectedOptions(prev => ({ ...prev, [poll.id]: option }))}
                     onCommentChange={(comment) => setComments(prev => ({ ...prev, [poll.id]: comment }))}
+                    onCustomAnswerChange={(answer) => setCustomAnswers(prev => ({ ...prev, [poll.id]: answer }))}
                     onVote={() => handleVote(poll.id)}
                   />
                   {isAdmin && (

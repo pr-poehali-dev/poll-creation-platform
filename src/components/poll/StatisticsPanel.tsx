@@ -13,9 +13,11 @@ interface Poll {
   total_responses?: number;
   user_voted?: boolean;
   statistics?: number[];
+  allow_custom_answers?: boolean;
   user_answer?: {
     option: number;
     comment: string;
+    custom_answer?: string;
   };
 }
 

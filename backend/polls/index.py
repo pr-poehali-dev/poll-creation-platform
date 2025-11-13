@@ -49,7 +49,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     SELECT id, target_audience, question, 
                            option1, option2, option3, option4, option5,
                            option6, option7, option8, option9, option10,
-                           created_at, is_active
+                           created_at, is_active, allow_custom_answers
                     FROM polls 
                     WHERE id = %s AND is_active = true
                 ''', (poll_id,))
@@ -70,7 +70,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'target_audience': row[1],
                     'question': row[2],
                     'options': options,
-                    'created_at': row[8].isoformat() if row[8] else None
+                    'created_at': row[13].isoformat() if row[13] else None,
+                    'allow_custom_answers': row[14] if len(row) > 14 else False
                 }
                 
                 cur.execute('SELECT COUNT(*) FROM poll_responses WHERE poll_id = %s', (poll_id,))
@@ -80,7 +81,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 
                 if user_fingerprint:
                     cur.execute('''
-                        SELECT selected_option, comment 
+                        SELECT selected_option, comment, custom_answer 
                         FROM poll_responses 
                         WHERE poll_id = %s AND user_fingerprint = %s
                     ''', (poll_id, user_fingerprint))
@@ -90,7 +91,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     if user_response:
                         poll_data['user_answer'] = {
                             'option': user_response[0],
-                            'comment': user_response[1]
+                            'comment': user_response[1],
+                            'custom_answer': user_response[2]
                         }
                         
                         stats = []
@@ -120,7 +122,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 cur.execute('''
                     SELECT id, target_audience, question, 
                            option1, option2, option3, option4, option5,
-                           option6, option7, option8, option9, option10
+                           option6, option7, option8, option9, option10,
+                           allow_custom_answers
                     FROM polls 
                     WHERE is_active = true
                     ORDER BY created_at DESC
@@ -133,7 +136,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                         'id': row[0],
                         'target_audience': row[1],
                         'question': row[2],
-                        'options': options
+                        'options': options,
+                        'allow_custom_answers': row[13] if len(row) > 13 else False
                     }
                     
                     if user_fingerprint:
@@ -167,8 +171,9 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 user_fingerprint = body_data.get('user_fingerprint')
                 selected_option = body_data.get('selected_option')
                 comment = body_data.get('comment', '')
+                custom_answer = body_data.get('custom_answer', '')
                 
-                if not all([poll_id, user_fingerprint, selected_option]):
+                if not all([poll_id, user_fingerprint]):
                     return {
                         'statusCode': 400,
                         'headers': headers,
@@ -176,7 +181,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                         'isBase64Encoded': False
                     }
                 
-                if selected_option < 1 or selected_option > 10:
+                if selected_option and (selected_option < 1 or selected_option > 10):
                     return {
                         'statusCode': 400,
                         'headers': headers,
@@ -186,13 +191,15 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 
                 if len(comment) > 100:
                     comment = comment[:100]
+                if len(custom_answer) > 100:
+                    custom_answer = custom_answer[:100]
                 
                 try:
                     cur.execute('''
                         INSERT INTO poll_responses 
-                        (poll_id, user_fingerprint, selected_option, comment)
-                        VALUES (%s, %s, %s, %s)
-                    ''', (poll_id, user_fingerprint, selected_option, comment))
+                        (poll_id, user_fingerprint, selected_option, comment, custom_answer)
+                        VALUES (%s, %s, %s, %s, %s)
+                    ''', (poll_id, user_fingerprint, selected_option, comment, custom_answer))
                     conn.commit()
                     
                     cur.execute('SELECT option1, option2, option3, option4, option5, option6, option7, option8, option9, option10 FROM polls WHERE id = %s', (poll_id,))
@@ -244,13 +251,22 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 target_audience = body_data.get('target_audience', '')
                 question = body_data.get('question', '')
                 options = body_data.get('options', [])
+                allow_custom_answers = body_data.get('allow_custom_answers', False)
                 
                 if len(target_audience) > 30:
                     target_audience = target_audience[:30]
                 if len(question) > 100:
                     question = question[:100]
                 
-                if not question or len(options) < 2 or len(options) > 10:
+                if not question:
+                    return {
+                        'statusCode': 400,
+                        'headers': headers,
+                        'body': json.dumps({'error': 'Question is required'}),
+                        'isBase64Encoded': False
+                    }
+                
+                if not allow_custom_answers and (len(options) < 2 or len(options) > 10):
                     return {
                         'statusCode': 400,
                         'headers': headers,
@@ -262,10 +278,10 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 
                 cur.execute('''
                     INSERT INTO polls 
-                    (target_audience, question, option1, option2, option3, option4, option5, option6, option7, option8, option9, option10)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    (target_audience, question, option1, option2, option3, option4, option5, option6, option7, option8, option9, option10, allow_custom_answers)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                     RETURNING id
-                ''', (target_audience, question, *options_padded))
+                ''', (target_audience, question, *options_padded, allow_custom_answers))
                 
                 poll_id = cur.fetchone()[0]
                 conn.commit()
@@ -284,6 +300,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 target_audience = body_data.get('target_audience', '')
                 question = body_data.get('question', '')
                 options = body_data.get('options', [])
+                allow_custom_answers = body_data.get('allow_custom_answers', False)
                 
                 if not poll_id:
                     return {
@@ -309,7 +326,15 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 if len(question) > 100:
                     question = question[:100]
                 
-                if not question or len(options) < 2 or len(options) > 10:
+                if not question:
+                    return {
+                        'statusCode': 400,
+                        'headers': headers,
+                        'body': json.dumps({'error': 'Question is required'}),
+                        'isBase64Encoded': False
+                    }
+                
+                if not allow_custom_answers and (len(options) < 2 or len(options) > 10):
                     return {
                         'statusCode': 400,
                         'headers': headers,
@@ -326,9 +351,10 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     UPDATE polls 
                     SET target_audience = %s, question = %s,
                         option1 = %s, option2 = %s, option3 = %s, option4 = %s, option5 = %s,
-                        option6 = %s, option7 = %s, option8 = %s, option9 = %s, option10 = %s
+                        option6 = %s, option7 = %s, option8 = %s, option9 = %s, option10 = %s,
+                        allow_custom_answers = %s
                     WHERE id = %s
-                ''', (target_audience, question, *options_padded, poll_id))
+                ''', (target_audience, question, *options_padded, allow_custom_answers, poll_id))
                 
                 if cur.rowcount == 0:
                     cur.close()
