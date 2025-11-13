@@ -266,13 +266,22 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                         'isBase64Encoded': False
                     }
                 
-                if not allow_custom_answers and (len(options) < 2 or len(options) > 10):
-                    return {
-                        'statusCode': 400,
-                        'headers': headers,
-                        'body': json.dumps({'error': 'Invalid poll data: need 2-10 options'}),
-                        'isBase64Encoded': False
-                    }
+                if not allow_custom_answers:
+                    if len(options) < 2 or len(options) > 10:
+                        return {
+                            'statusCode': 400,
+                            'headers': headers,
+                            'body': json.dumps({'error': 'Invalid poll data: need 2-10 options'}),
+                            'isBase64Encoded': False
+                        }
+                else:
+                    if len(options) > 10:
+                        return {
+                            'statusCode': 400,
+                            'headers': headers,
+                            'body': json.dumps({'error': 'Too many options (max 10)'}),
+                            'isBase64Encoded': False
+                        }
                 
                 options_padded = options + [None] * (10 - len(options))
                 
@@ -334,13 +343,22 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                         'isBase64Encoded': False
                     }
                 
-                if not allow_custom_answers and (len(options) < 2 or len(options) > 10):
-                    return {
-                        'statusCode': 400,
-                        'headers': headers,
-                        'body': json.dumps({'error': 'Invalid poll data: need 2-10 options'}),
-                        'isBase64Encoded': False
-                    }
+                if not allow_custom_answers:
+                    if len(options) < 2 or len(options) > 10:
+                        return {
+                            'statusCode': 400,
+                            'headers': headers,
+                            'body': json.dumps({'error': 'Invalid poll data: need 2-10 options'}),
+                            'isBase64Encoded': False
+                        }
+                else:
+                    if len(options) > 10:
+                        return {
+                            'statusCode': 400,
+                            'headers': headers,
+                            'body': json.dumps({'error': 'Too many options (max 10)'}),
+                            'isBase64Encoded': False
+                        }
                 
                 conn = get_db_connection()
                 cur = conn.cursor()
