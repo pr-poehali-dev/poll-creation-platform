@@ -58,12 +58,12 @@ export default function StatisticsPanel({ poll, onExport }: StatisticsPanelProps
             <div className="flex items-center gap-3 px-4">
               <Icon name="Users" size={24} className="text-primary" />
               <span className="text-2xl font-bold min-w-[60px]">{poll.total_responses || 0}</span>
-              <span className="text-sm text-muted-foreground min-w-[40px]">отв.</span>
+              <span className="text-sm text-muted-foreground">Ответов</span>
             </div>
             <div className="flex items-center gap-3 px-4">
               <Icon name="TrendingUp" size={24} className="text-accent" />
               <span className="text-2xl font-bold min-w-[60px]">{poll.statistics.reduce((a, b) => a + b, 0)}</span>
-              <span className="text-sm text-muted-foreground min-w-[40px]">гол.</span>
+              <span className="text-sm text-muted-foreground">Голосов</span>
             </div>
           </div>
         </div>
