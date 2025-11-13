@@ -46,9 +46,18 @@ export default function PollCard({
   onUserCustomOptionChange, 
   onVote 
 }: PollCardProps) {
+  const hasFilledOptions = userCustomOptions.some(opt => opt.trim() !== '');
   const isButtonDisabled = poll.allow_custom_answers 
-    ? !userCustomOptions.some(opt => opt.trim() !== '') 
+    ? !hasFilledOptions
     : !selectedOption;
+  
+  console.log('🎨 PollCard render:', { 
+    pollId: poll.id, 
+    allowCustom: poll.allow_custom_answers, 
+    userCustomOptions, 
+    hasFilledOptions, 
+    isButtonDisabled 
+  });
   
   return (
     <Card className="border-2">
