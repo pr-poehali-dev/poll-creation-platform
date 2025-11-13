@@ -174,6 +174,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 custom_answer = body_data.get('custom_answer', '')
                 user_custom_options = body_data.get('user_custom_options', [])
                 
+                print(f'📥 Vote request: poll_id={poll_id}, selected_option={selected_option}, user_custom_options={user_custom_options}')
+                
                 if not all([poll_id, user_fingerprint]):
                     return {
                         'statusCode': 400,
@@ -206,11 +208,13 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     custom_answer = custom_answer[:100]
                 
                 try:
+                    print(f'💾 Inserting vote: poll_id={poll_id}, user_fp={user_fingerprint}, option={selected_option}')
                     cur.execute('''
                         INSERT INTO poll_responses 
                         (poll_id, user_fingerprint, selected_option, comment, custom_answer)
                         VALUES (%s, %s, %s, %s, %s)
                     ''', (poll_id, user_fingerprint, selected_option, comment, custom_answer))
+                    print('✅ Vote inserted successfully')
                     
                     # Сохранение пользовательских вариантов, если есть
                     if user_custom_options:
