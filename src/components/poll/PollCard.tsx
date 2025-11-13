@@ -46,6 +46,8 @@ export default function PollCard({
   onUserCustomOptionChange, 
   onVote 
 }: PollCardProps) {
+  console.log('PollCard render. Poll ID:', poll.id, 'Options:', poll.options, 'allow_custom:', poll.allow_custom_answers, 'selectedOption:', selectedOption);
+  
   return (
     <Card className="border-2">
       <CardHeader className="bg-muted/30">
