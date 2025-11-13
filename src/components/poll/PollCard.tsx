@@ -42,7 +42,10 @@ export default function PollCard({
           <Icon name="Users" size={16} />
           {poll.target_audience}
         </div>
-        <CardTitle className="text-2xl" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+        <CardTitle 
+          className={`text-2xl ${!poll.user_voted ? 'text-green-600' : ''}`}
+          style={{ fontFamily: 'Montserrat, sans-serif' }}
+        >
           {poll.question}
         </CardTitle>
       </CardHeader>
