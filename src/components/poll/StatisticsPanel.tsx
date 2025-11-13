@@ -48,45 +48,45 @@ export default function StatisticsPanel({ poll, onExport }: StatisticsPanelProps
 
   return (
     <Card className="border-2 border-accent/20 h-fit">
-      <CardHeader className="bg-accent/5 pb-3">
-        <CardTitle className="flex items-center gap-2 text-base">
-          <Icon name="BarChart3" size={16} />
+      <CardHeader className="bg-accent/5 py-2 px-4">
+        <CardTitle className="flex items-center gap-1.5 text-sm">
+          <Icon name="BarChart3" size={14} />
           Статистика
         </CardTitle>
       </CardHeader>
-      <CardContent className="pt-4 space-y-4">
-        <div className="grid grid-cols-2 gap-2">
-          <div className="text-center p-2 bg-muted/30 rounded-lg">
-            <Icon name="Users" size={18} className="mx-auto text-primary mb-1" />
-            <p className="text-lg font-bold text-foreground">{poll.total_responses || 0}</p>
-            <p className="text-[10px] text-muted-foreground">Ответов</p>
+      <CardContent className="pt-3 pb-4 px-4 space-y-3">
+        <div className="grid grid-cols-2 gap-1.5">
+          <div className="text-center p-1.5 bg-muted/30 rounded">
+            <Icon name="Users" size={14} className="mx-auto text-primary mb-0.5" />
+            <p className="text-sm font-bold text-foreground">{poll.total_responses || 0}</p>
+            <p className="text-[9px] text-muted-foreground">Ответов</p>
           </div>
-          <div className="text-center p-2 bg-muted/30 rounded-lg">
-            <Icon name="TrendingUp" size={18} className="mx-auto text-accent mb-1" />
-            <p className="text-lg font-bold text-foreground">
+          <div className="text-center p-1.5 bg-muted/30 rounded">
+            <Icon name="TrendingUp" size={14} className="mx-auto text-accent mb-0.5" />
+            <p className="text-sm font-bold text-foreground">
               {poll.statistics.reduce((a, b) => a + b, 0)}
             </p>
-            <p className="text-[10px] text-muted-foreground">Голосов</p>
+            <p className="text-[9px] text-muted-foreground">Голосов</p>
           </div>
         </div>
 
-        <div className="space-y-3">
-          <div className="space-y-1.5">
-            <Label className="text-[10px] text-muted-foreground">Фильтр по датам</Label>
+        <div className="space-y-2">
+          <div className="space-y-1">
+            <Label className="text-[9px] text-muted-foreground">Фильтр по датам</Label>
             <div className="flex gap-1">
               <Input
                 type="date"
                 value={dateFrom}
                 onChange={(e) => setDateFrom(e.target.value)}
                 placeholder="От"
-                className="text-xs h-8"
+                className="text-[10px] h-7 px-2"
               />
               <Input
                 type="date"
                 value={dateTo}
                 onChange={(e) => setDateTo(e.target.value)}
                 placeholder="До"
-                className="text-xs h-8"
+                className="text-[10px] h-7 px-2"
               />
             </div>
             <div className="flex gap-1">
@@ -94,20 +94,20 @@ export default function StatisticsPanel({ poll, onExport }: StatisticsPanelProps
                 variant="outline"
                 size="sm"
                 onClick={handleApplyDateFilter}
-                className="flex-1 gap-1 h-7 text-xs"
+                className="flex-1 gap-1 h-6 text-[10px] px-2"
                 disabled={!dateFrom || !dateTo}
               >
-                <Icon name="Filter" size={12} />
+                <Icon name="Filter" size={10} />
                 Применить
               </Button>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={handleResetDateFilter}
-                className="gap-1 h-7 text-xs"
+                className="gap-1 h-6 text-[10px] px-2"
                 disabled={!dateFrom && !dateTo}
               >
-                <Icon name="X" size={12} />
+                <Icon name="X" size={10} />
               </Button>
             </div>
           </div>
@@ -117,45 +117,45 @@ export default function StatisticsPanel({ poll, onExport }: StatisticsPanelProps
               variant="outline"
               size="sm"
               onClick={() => onExport('pdf')}
-              className="flex-1 gap-1 h-8 text-xs"
+              className="flex-1 gap-1 h-7 text-[10px] px-2"
             >
-              <Icon name="FileText" size={14} />
+              <Icon name="FileText" size={12} />
               PDF
             </Button>
             <Button
               variant="outline"
               size="sm"
               onClick={() => onExport('excel')}
-              className="flex-1 gap-1 h-8 text-xs"
+              className="flex-1 gap-1 h-7 text-[10px] px-2"
             >
-              <Icon name="FileSpreadsheet" size={14} />
+              <Icon name="FileSpreadsheet" size={12} />
               Excel
             </Button>
           </div>
         </div>
 
-        <div className="space-y-3">
-          <h4 className="font-semibold text-xs text-muted-foreground">Распределение голосов</h4>
+        <div className="space-y-2">
+          <h4 className="font-semibold text-[10px] text-muted-foreground">Распределение голосов</h4>
           {poll.options.map((option, index) => {
             const count = poll.statistics![index];
             const total = poll.statistics!.reduce((a, b) => a + b, 0);
             const percentage = getPercentage(count, total);
             
             return (
-              <div key={index} className="space-y-1">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-foreground truncate max-w-[140px]" title={option}>
+              <div key={index} className="space-y-0.5">
+                <div className="flex items-center justify-between text-[10px]">
+                  <span className="text-foreground truncate max-w-[120px]" title={option}>
                     {option}
                   </span>
-                  <span className="font-semibold text-primary text-xs">{percentage}%</span>
+                  <span className="font-semibold text-primary">{percentage}%</span>
                 </div>
-                <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                <div className="h-1 bg-muted rounded-full overflow-hidden">
                   <div
                     className="h-full bg-gradient-to-r from-accent to-primary transition-all duration-1000 ease-out"
                     style={{ width: `${percentage}%` }}
                   />
                 </div>
-                <p className="text-[10px] text-muted-foreground">
+                <p className="text-[8px] text-muted-foreground">
                   {count} {count === 1 ? 'голос' : count < 5 ? 'голоса' : 'голосов'}
                 </p>
               </div>
