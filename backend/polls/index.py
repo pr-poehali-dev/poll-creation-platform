@@ -48,6 +48,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 cur.execute('''
                     SELECT id, target_audience, question, 
                            option1, option2, option3, option4, option5,
+                           option6, option7, option8, option9, option10,
                            created_at, is_active
                     FROM polls 
                     WHERE id = %s AND is_active = true
@@ -62,11 +63,13 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                         'isBase64Encoded': False
                     }
                 
+                options = [row[i] for i in range(3, 13) if row[i]]
+                
                 poll_data = {
                     'id': row[0],
                     'target_audience': row[1],
                     'question': row[2],
-                    'options': [row[3], row[4], row[5], row[6], row[7]],
+                    'options': options,
                     'created_at': row[8].isoformat() if row[8] else None
                 }
                 
@@ -116,7 +119,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             else:
                 cur.execute('''
                     SELECT id, target_audience, question, 
-                           option1, option2, option3, option4, option5
+                           option1, option2, option3, option4, option5,
+                           option6, option7, option8, option9, option10
                     FROM polls 
                     WHERE is_active = true
                     ORDER BY created_at DESC
@@ -124,11 +128,12 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 
                 polls = []
                 for row in cur.fetchall():
+                    options = [row[i] for i in range(3, 13) if row[i]]
                     poll = {
                         'id': row[0],
                         'target_audience': row[1],
                         'question': row[2],
-                        'options': [row[3], row[4], row[5], row[6], row[7]]
+                        'options': options
                     }
                     
                     if user_fingerprint:
@@ -171,7 +176,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                         'isBase64Encoded': False
                     }
                 
-                if selected_option not in [1, 2, 3, 4, 5]:
+                if selected_option < 1 or selected_option > 10:
                     return {
                         'statusCode': 400,
                         'headers': headers,
@@ -190,8 +195,12 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     ''', (poll_id, user_fingerprint, selected_option, comment))
                     conn.commit()
                     
+                    cur.execute('SELECT option1, option2, option3, option4, option5, option6, option7, option8, option9, option10 FROM polls WHERE id = %s', (poll_id,))
+                    poll_options = cur.fetchone()
+                    num_options = len([opt for opt in poll_options if opt])
+                    
                     stats = []
-                    for i in range(1, 6):
+                    for i in range(1, num_options + 1):
                         cur.execute('''
                             SELECT COUNT(*) 
                             FROM poll_responses 
@@ -241,20 +250,22 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 if len(question) > 100:
                     question = question[:100]
                 
-                if not question or len(options) != 5:
+                if not question or len(options) < 2 or len(options) > 10:
                     return {
                         'statusCode': 400,
                         'headers': headers,
-                        'body': json.dumps({'error': 'Invalid poll data'}),
+                        'body': json.dumps({'error': 'Invalid poll data: need 2-10 options'}),
                         'isBase64Encoded': False
                     }
                 
+                options_padded = options + [None] * (10 - len(options))
+                
                 cur.execute('''
                     INSERT INTO polls 
-                    (target_audience, question, option1, option2, option3, option4, option5)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s)
+                    (target_audience, question, option1, option2, option3, option4, option5, option6, option7, option8, option9, option10)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                     RETURNING id
-                ''', (target_audience, question, options[0], options[1], options[2], options[3], options[4]))
+                ''', (target_audience, question, *options_padded))
                 
                 poll_id = cur.fetchone()[0]
                 conn.commit()
@@ -298,23 +309,26 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 if len(question) > 100:
                     question = question[:100]
                 
-                if not question or len(options) != 5:
+                if not question or len(options) < 2 or len(options) > 10:
                     return {
                         'statusCode': 400,
                         'headers': headers,
-                        'body': json.dumps({'error': 'Invalid poll data'}),
+                        'body': json.dumps({'error': 'Invalid poll data: need 2-10 options'}),
                         'isBase64Encoded': False
                     }
                 
                 conn = get_db_connection()
                 cur = conn.cursor()
                 
+                options_padded = options + [None] * (10 - len(options))
+                
                 cur.execute('''
                     UPDATE polls 
                     SET target_audience = %s, question = %s,
-                        option1 = %s, option2 = %s, option3 = %s, option4 = %s, option5 = %s
+                        option1 = %s, option2 = %s, option3 = %s, option4 = %s, option5 = %s,
+                        option6 = %s, option7 = %s, option8 = %s, option9 = %s, option10 = %s
                     WHERE id = %s
-                ''', (target_audience, question, options[0], options[1], options[2], options[3], options[4], poll_id))
+                ''', (target_audience, question, *options_padded, poll_id))
                 
                 if cur.rowcount == 0:
                     cur.close()

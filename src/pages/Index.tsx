@@ -53,7 +53,7 @@ export default function Index() {
     id: undefined as number | undefined,
     target_audience: '',
     question: '',
-    options: ['', '', '', '', '']
+    options: ['', '']
   });
   const { toast } = useToast();
   const userFingerprint = getUserFingerprint();
@@ -208,10 +208,11 @@ export default function Index() {
   };
 
   const handleCreatePoll = async () => {
-    if (!newPoll.question || newPoll.options.some(opt => !opt)) {
+    const filledOptions = newPoll.options.filter(opt => opt.trim() !== '');
+    if (!newPoll.question || filledOptions.length < 2) {
       toast({
         title: 'Заполните все поля',
-        description: 'Вопрос и все варианты ответов обязательны',
+        description: 'Вопрос и минимум 2 варианта ответов обязательны',
         variant: 'destructive'
       });
       return;
@@ -229,7 +230,7 @@ export default function Index() {
           action: 'create',
           target_audience: newPoll.target_audience,
           question: newPoll.question,
-          options: newPoll.options
+          options: filledOptions
         })
       });
 
@@ -272,10 +273,11 @@ export default function Index() {
   };
 
   const handleUpdatePoll = async () => {
-    if (!newPoll.question || newPoll.options.some(opt => !opt) || !newPoll.id) {
+    const filledOptions = newPoll.options.filter(opt => opt.trim() !== '');
+    if (!newPoll.question || filledOptions.length < 2 || !newPoll.id) {
       toast({
         title: 'Заполните все поля',
-        description: 'Вопрос и все варианты ответов обязательны',
+        description: 'Вопрос и минимум 2 варианта ответов обязательны',
         variant: 'destructive'
       });
       return;
@@ -289,7 +291,7 @@ export default function Index() {
         poll_id: newPoll.id,
         target_audience: newPoll.target_audience,
         question: newPoll.question,
-        options: newPoll.options
+        options: filledOptions
       };
       
       console.log('Sending update:', payload);
@@ -399,7 +401,7 @@ export default function Index() {
       id: undefined,
       target_audience: '',
       question: '',
-      options: ['', '', '', '', '']
+      options: ['', '']
     });
     setEditMode(false);
     setShowAdmin(false);

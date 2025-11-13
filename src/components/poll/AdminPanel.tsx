@@ -77,31 +77,67 @@ export default function AdminPanel({ newPoll, editMode, isSaving = false, onUpda
           />
         </div>
         <div className="space-y-3">
-          <Label>Варианты ответов</Label>
-          {newPoll.options.map((option, index) => (
-            <div key={index}>
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-xs text-muted-foreground">Вариант {index + 1}</span>
-                <span className={`text-xs font-medium ${
-                  option.length > 45 
-                    ? 'text-destructive' 
-                    : option.length > 40 
-                    ? 'text-orange-500' 
-                    : 'text-muted-foreground'
-                }`}>
-                  {option.length}/50
-                </span>
-              </div>
-              <Input
-                placeholder={`Введите вариант ${index + 1}`}
-                maxLength={50}
-                value={option}
-                onChange={(e) => {
-                  const newOptions = [...newPoll.options];
-                  newOptions[index] = e.target.value;
-                  onUpdatePoll({ ...newPoll, options: newOptions });
+          <div className="flex items-center justify-between">
+            <Label>Варианты ответов (минимум 2, максимум 10)</Label>
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={() => {
+                  if (newPoll.options.length < 10) {
+                    onUpdatePoll({ ...newPoll, options: [...newPoll.options, ''] });
+                  }
                 }}
-              />
+                disabled={newPoll.options.length >= 10}
+                className="gap-1"
+              >
+                <Icon name="Plus" size={14} />
+                Добавить
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={() => {
+                  if (newPoll.options.length > 2) {
+                    onUpdatePoll({ ...newPoll, options: newPoll.options.slice(0, -1) });
+                  }
+                }}
+                disabled={newPoll.options.length <= 2}
+                className="gap-1"
+              >
+                <Icon name="Minus" size={14} />
+                Удалить
+              </Button>
+            </div>
+          </div>
+          {newPoll.options.map((option, index) => (
+            <div key={index} className="flex gap-2">
+              <div className="flex-1">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-xs text-muted-foreground">Вариант {index + 1}</span>
+                  <span className={`text-xs font-medium ${
+                    option.length > 45 
+                      ? 'text-destructive' 
+                      : option.length > 40 
+                      ? 'text-orange-500' 
+                      : 'text-muted-foreground'
+                  }`}>
+                    {option.length}/50
+                  </span>
+                </div>
+                <Input
+                  placeholder={`Введите вариант ${index + 1}`}
+                  maxLength={50}
+                  value={option}
+                  onChange={(e) => {
+                    const newOptions = [...newPoll.options];
+                    newOptions[index] = e.target.value;
+                    onUpdatePoll({ ...newPoll, options: newOptions });
+                  }}
+                />
+              </div>
             </div>
           ))}
         </div>
