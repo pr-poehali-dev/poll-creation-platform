@@ -63,34 +63,8 @@ export default function PollCard({
       <CardContent className="pt-6 space-y-4">
         {!poll.user_voted ? (
           <>
-            {poll.options.length > 0 && (
+            {poll.allow_custom_answers ? (
               <div className="space-y-3">
-                {poll.options.map((option, index) => (
-                  <Button
-                    key={index}
-                    variant={selectedOption === index + 1 ? "default" : "outline"}
-                    className="w-full justify-start text-left h-auto py-4 px-6 transition-all duration-300 hover:scale-105 hover:shadow-lg"
-                    onClick={() => onSelectOption(index + 1)}
-                  >
-                    <div className="flex items-center gap-3 w-full">
-                      <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${
-                        selectedOption === index + 1 
-                          ? 'bg-accent border-accent' 
-                          : 'border-muted-foreground'
-                      }`}>
-                        {selectedOption === index + 1 && (
-                          <Icon name="Check" size={14} className="text-accent-foreground" />
-                        )}
-                      </div>
-                      <span style={{ fontFamily: 'Open Sans, sans-serif' }}>{option}</span>
-                    </div>
-                  </Button>
-                ))}
-              </div>
-            )}
-
-            {poll.allow_custom_answers && (
-              <div className="space-y-3 pt-4">
                 <Label className="text-sm font-semibold">Введите свои варианты ответов (до 30 символов каждый)</Label>
                 {userCustomOptions.map((option, index) => (
                   <div key={index}>
@@ -115,6 +89,32 @@ export default function PollCard({
                   </div>
                 ))}
               </div>
+            ) : (
+              poll.options.length > 0 && (
+                <div className="space-y-3">
+                  {poll.options.map((option, index) => (
+                    <Button
+                      key={index}
+                      variant={selectedOption === index + 1 ? "default" : "outline"}
+                      className="w-full justify-start text-left h-auto py-4 px-6 transition-all duration-300 hover:scale-105 hover:shadow-lg"
+                      onClick={() => onSelectOption(index + 1)}
+                    >
+                      <div className="flex items-center gap-3 w-full">
+                        <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${
+                          selectedOption === index + 1 
+                            ? 'bg-accent border-accent' 
+                            : 'border-muted-foreground'
+                        }`}>
+                          {selectedOption === index + 1 && (
+                            <Icon name="Check" size={14} className="text-accent-foreground" />
+                          )}
+                        </div>
+                        <span style={{ fontFamily: 'Open Sans, sans-serif' }}>{option}</span>
+                      </div>
+                    </Button>
+                  ))}
+                </div>
+              )
             )}
 
             <div className="pt-4">
