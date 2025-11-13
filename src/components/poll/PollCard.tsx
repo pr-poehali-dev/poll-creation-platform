@@ -90,14 +90,14 @@ export default function PollCard({
                       placeholder={`Введите вариант ${index + 1}`}
                       maxLength={30}
                       value={option}
+                      disabled={false}
                       onChange={(e) => {
                         const newValue = e.target.value;
                         console.log('🔥 INPUT onChange FIRED!', { index, newValue, pollId: poll.id });
                         onUserCustomOptionChange(index, newValue);
                       }}
-                      onInput={(e) => {
-                        console.log('🔥 onInput FIRED!', e);
-                      }}
+                      onFocus={() => console.log('🎯 Input focused!', index)}
+                      onKeyDown={(e) => console.log('🎯 Key pressed!', e.key)}
                     />
                   </div>
                 ))}
