@@ -49,7 +49,6 @@ export default function PollCard({
   const isButtonDisabled = poll.allow_custom_answers 
     ? !userCustomOptions.some(opt => opt.trim() !== '') 
     : !selectedOption;
-  console.log(`Poll #${poll.id}: allow_custom=${poll.allow_custom_answers}, disabled=${isButtonDisabled}, userCustomOptions=`, userCustomOptions);
   
   return (
     <Card className="border-2">
@@ -71,7 +70,6 @@ export default function PollCard({
             {poll.allow_custom_answers ? (
               <div className="space-y-3">
                 <Label className="text-sm font-semibold">Введите свои варианты ответов (до 30 символов каждый)</Label>
-                {console.log(`🎯 Рендерим ${userCustomOptions.length} Input полей для опроса #${poll.id}`)}
                 {userCustomOptions.map((option, index) => (
                   <div key={index}>
                     <div className="flex items-center justify-between mb-1">
@@ -91,13 +89,7 @@ export default function PollCard({
                       maxLength={30}
                       value={option}
                       disabled={false}
-                      onChange={(e) => {
-                        const newValue = e.target.value;
-                        console.log('🔥 INPUT onChange FIRED!', { index, newValue, pollId: poll.id });
-                        onUserCustomOptionChange(index, newValue);
-                      }}
-                      onFocus={() => console.log('🎯 Input focused!', index)}
-                      onKeyDown={(e) => console.log('🎯 Key pressed!', e.key)}
+                      onChange={(e) => onUserCustomOptionChange(index, e.target.value)}
                     />
                   </div>
                 ))}

@@ -116,11 +116,9 @@ export default function Index() {
   };
 
   const handleUserCustomOptionChange = (pollId: number) => (index: number, value: string) => {
-    console.log('🚀 handleUserCustomOptionChange called:', { pollId, index, value });
     setUserCustomOptions(prev => {
       const currentOptions = prev[pollId] || [];
       const newOptions = currentOptions.map((opt, i) => i === index ? value : opt);
-      console.log('🚀 Updated userCustomOptions:', newOptions);
       return {
         ...prev,
         [pollId]: newOptions
