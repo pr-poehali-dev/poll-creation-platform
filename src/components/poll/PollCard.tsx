@@ -90,29 +90,33 @@ export default function PollCard({
                 ))}
               </div>
             ) : (
-              poll.options.length > 0 && (
+              poll.options.filter(opt => opt.trim() !== '').length > 0 && (
                 <div className="space-y-3">
-                  {poll.options.map((option, index) => (
-                    <Button
-                      key={index}
-                      variant={selectedOption === index + 1 ? "default" : "outline"}
-                      className="w-full justify-start text-left h-auto py-4 px-6 transition-all duration-300 hover:scale-105 hover:shadow-lg"
-                      onClick={() => onSelectOption(index + 1)}
-                    >
-                      <div className="flex items-center gap-3 w-full">
-                        <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${
-                          selectedOption === index + 1 
-                            ? 'bg-accent border-accent' 
-                            : 'border-muted-foreground'
-                        }`}>
-                          {selectedOption === index + 1 && (
-                            <Icon name="Check" size={14} className="text-accent-foreground" />
-                          )}
+                  {poll.options
+                    .map((option, index) => ({ option, originalIndex: index }))
+                    .filter(item => item.option.trim() !== '')
+                    .map((item, displayIndex) => (
+                      <Button
+                        key={item.originalIndex}
+                        variant={selectedOption === item.originalIndex + 1 ? "default" : "outline"}
+                        className="w-full justify-start text-left h-auto py-4 px-6 animate-in fade-in slide-in-from-left-2"
+                        style={{ animationDelay: `${displayIndex * 100}ms` }}
+                        onClick={() => onSelectOption(item.originalIndex + 1)}
+                      >
+                        <div className="flex items-center gap-3 w-full">
+                          <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${
+                            selectedOption === item.originalIndex + 1 
+                              ? 'bg-accent border-accent' 
+                              : 'border-muted-foreground'
+                          }`}>
+                            {selectedOption === item.originalIndex + 1 && (
+                              <Icon name="Check" size={14} className="text-accent-foreground" />
+                            )}
+                          </div>
+                          <span style={{ fontFamily: 'Open Sans, sans-serif' }}>{item.option}</span>
                         </div>
-                        <span style={{ fontFamily: 'Open Sans, sans-serif' }}>{option}</span>
-                      </div>
-                    </Button>
-                  ))}
+                      </Button>
+                    ))}
                 </div>
               )
             )}
