@@ -71,7 +71,7 @@ export default function Index() {
 
   const fetchPolls = async () => {
     try {
-      const response = await fetch(API_URL);
+      const response = await fetch(`${API_URL}?user_fingerprint=${userFingerprint}`);
       const data = await response.json();
       if (data.polls && data.polls.length > 0) {
         const sortedPolls = sortPolls(data.polls, sortOrder);

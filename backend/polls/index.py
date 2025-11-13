@@ -124,12 +124,24 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 
                 polls = []
                 for row in cur.fetchall():
-                    polls.append({
+                    poll = {
                         'id': row[0],
                         'target_audience': row[1],
                         'question': row[2],
                         'options': [row[3], row[4], row[5], row[6], row[7]]
-                    })
+                    }
+                    
+                    if user_fingerprint:
+                        cur.execute('''
+                            SELECT COUNT(*) FROM poll_responses 
+                            WHERE poll_id = %s AND user_fingerprint = %s
+                        ''', (row[0], user_fingerprint))
+                        has_voted = cur.fetchone()[0] > 0
+                        poll['user_voted'] = has_voted
+                    else:
+                        poll['user_voted'] = False
+                    
+                    polls.append(poll)
                 
                 cur.close()
                 conn.close()
