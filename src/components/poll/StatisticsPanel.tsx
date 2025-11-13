@@ -54,16 +54,16 @@ export default function StatisticsPanel({ poll, onExport }: StatisticsPanelProps
             <Icon name="BarChart3" size={14} />
             Статистика
           </CardTitle>
-          <div className="flex gap-2">
-            <div className="flex items-center gap-1">
-              <Icon name="Users" size={12} className="text-primary" />
-              <span className="text-xs font-bold">{poll.total_responses || 0}</span>
-              <span className="text-[9px] text-muted-foreground">отв.</span>
+          <div className="flex gap-3">
+            <div className="flex items-center gap-1.5">
+              <Icon name="Users" size={24} className="text-primary" />
+              <span className="text-2xl font-bold">{poll.total_responses || 0}</span>
+              <span className="text-sm text-muted-foreground">отв.</span>
             </div>
-            <div className="flex items-center gap-1">
-              <Icon name="TrendingUp" size={12} className="text-accent" />
-              <span className="text-xs font-bold">{poll.statistics.reduce((a, b) => a + b, 0)}</span>
-              <span className="text-[9px] text-muted-foreground">гол.</span>
+            <div className="flex items-center gap-1.5">
+              <Icon name="TrendingUp" size={24} className="text-accent" />
+              <span className="text-2xl font-bold">{poll.statistics.reduce((a, b) => a + b, 0)}</span>
+              <span className="text-sm text-muted-foreground">гол.</span>
             </div>
           </div>
         </div>
