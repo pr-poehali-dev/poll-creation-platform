@@ -101,7 +101,10 @@ export default function PollCard({
                         variant={selectedOption === item.originalIndex + 1 ? "default" : "outline"}
                         className="w-full justify-start text-left h-auto py-4 px-6 animate-in fade-in slide-in-from-left-2"
                         style={{ animationDelay: `${displayIndex * 100}ms` }}
-                        onClick={() => onSelectOption(item.originalIndex + 1)}
+                        onClick={() => {
+                          console.log('Выбран вариант:', item.originalIndex + 1, 'Текст:', item.option);
+                          onSelectOption(item.originalIndex + 1);
+                        }}
                       >
                         <div className="flex items-center gap-3 w-full">
                           <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${
@@ -140,7 +143,10 @@ export default function PollCard({
             </div>
 
             <Button 
-              onClick={onVote} 
+              onClick={() => {
+                console.log('Попытка голосования. selectedOption:', selectedOption, 'poll.allow_custom_answers:', poll.allow_custom_answers);
+                onVote();
+              }} 
               className="w-full gap-2 py-6 text-lg"
               disabled={poll.allow_custom_answers ? userCustomOptions.every(opt => opt.trim() === '') : !selectedOption}
             >
