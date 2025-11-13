@@ -232,21 +232,27 @@ export default function Index() {
     setIsSaving(true);
 
     try {
+      const payload = {
+        action: 'create',
+        target_audience: newPoll.target_audience,
+        question: newPoll.question,
+        options: filledOptions,
+        allow_custom_answers: newPoll.allow_custom_answers
+      };
+      
+      console.log('Creating poll with payload:', payload);
+      
       const response = await fetch(API_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-          action: 'create',
-          target_audience: newPoll.target_audience,
-          question: newPoll.question,
-          options: filledOptions,
-          allow_custom_answers: newPoll.allow_custom_answers
-        })
+        body: JSON.stringify(payload)
       });
 
+      console.log('Response status:', response.status);
       const data = await response.json();
+      console.log('Response data:', data);
 
       if (data.success) {
         toast({
@@ -257,12 +263,21 @@ export default function Index() {
           id: undefined,
           target_audience: '',
           question: '',
-          options: ['', '', '', '', '']
+          options: ['', ''],
+          allow_custom_answers: false
         });
         setShowAdmin(false);
         fetchPolls();
+      } else {
+        console.error('Create poll failed:', data);
+        toast({
+          title: 'Ошибка',
+          description: data.error || 'Не удалось создать опрос',
+          variant: 'destructive'
+        });
       }
     } catch (error) {
+      console.error('Create poll error:', error);
       toast({
         title: 'Ошибка',
         description: 'Не удалось создать опрос',

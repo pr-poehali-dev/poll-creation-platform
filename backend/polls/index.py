@@ -253,6 +253,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 options = body_data.get('options', [])
                 allow_custom_answers = body_data.get('allow_custom_answers', False)
                 
+                print(f'Create poll request: question={question}, options={options}, allow_custom={allow_custom_answers}')
+                
                 if len(target_audience) > 30:
                     target_audience = target_audience[:30]
                 if len(question) > 100:
