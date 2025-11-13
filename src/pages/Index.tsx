@@ -196,10 +196,10 @@ export default function Index() {
       action: 'vote',
       poll_id: pollId,
       user_fingerprint: userFingerprint,
-      selected_option: selectedOption,
+      selected_option: selectedOption || null,
       comment: comment,
       custom_answer: customAnswer,
-      user_custom_options: poll?.allow_custom_answers ? customOptions.filter(opt => opt.trim() !== '') : undefined
+      user_custom_options: poll?.allow_custom_answers ? customOptions.filter(opt => opt.trim() !== '') : []
     };
     
     console.log('🚀 Sending vote payload:', payload);
