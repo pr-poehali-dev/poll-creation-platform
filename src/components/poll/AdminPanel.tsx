@@ -138,6 +138,20 @@ export default function AdminPanel({ newPoll, editMode, isSaving = false, onUpda
                   }}
                 />
               </div>
+              {newPoll.options.length > 2 && (
+                <Button
+                  type="button"
+                  size="icon"
+                  variant="ghost"
+                  onClick={() => {
+                    const newOptions = newPoll.options.filter((_, i) => i !== index);
+                    onUpdatePoll({ ...newPoll, options: newOptions });
+                  }}
+                  className="self-end hover:bg-destructive/10 hover:text-destructive"
+                >
+                  <Icon name="X" size={18} />
+                </Button>
+              )}
             </div>
           ))}
         </div>
