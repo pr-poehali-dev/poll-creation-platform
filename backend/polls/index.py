@@ -200,8 +200,10 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                         'isBase64Encoded': False
                     }
                 
-                # Проверка selected_option только если он передан
-                if selected_option is not None and (selected_option < 1 or selected_option > 10):
+                # Проверка selected_option
+                # Для опросов с пользовательскими вариантами selected_option = 0
+                # Для обычных опросов selected_option = 1-10
+                if selected_option is not None and (selected_option < 0 or selected_option > 10):
                     return {
                         'statusCode': 400,
                         'headers': headers,
@@ -209,12 +211,21 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                         'isBase64Encoded': False
                     }
                 
-                # Для custom answers опросов selected_option может быть None
-                if not user_custom_options and not selected_option:
+                # Для custom answers опросов selected_option должен быть 0
+                if user_custom_options and selected_option != 0:
                     return {
                         'statusCode': 400,
                         'headers': headers,
-                        'body': json.dumps({'error': 'Either selected_option or user_custom_options required'}),
+                        'body': json.dumps({'error': 'For custom answers polls, selected_option must be 0'}),
+                        'isBase64Encoded': False
+                    }
+                
+                # Для обычных опросов selected_option обязателен (1-10)
+                if not user_custom_options and (not selected_option or selected_option < 1):
+                    return {
+                        'statusCode': 400,
+                        'headers': headers,
+                        'body': json.dumps({'error': 'Selected option required for standard polls'}),
                         'isBase64Encoded': False
                     }
                 
