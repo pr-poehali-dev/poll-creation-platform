@@ -56,7 +56,9 @@ export default function PollCard({
     allowCustom: poll.allow_custom_answers, 
     userCustomOptions, 
     hasFilledOptions, 
-    isButtonDisabled 
+    isButtonDisabled,
+    userCustomOptionsType: typeof userCustomOptions,
+    isArray: Array.isArray(userCustomOptions)
   });
   
   return (
@@ -98,7 +100,10 @@ export default function PollCard({
                       maxLength={30}
                       value={option}
                       disabled={false}
-                      onChange={(e) => onUserCustomOptionChange(index, e.target.value)}
+                      onChange={(e) => {
+                        console.log('🟢 Input onChange:', { index, value: e.target.value });
+                        onUserCustomOptionChange(index, e.target.value);
+                      }}
                     />
                   </div>
                 ))}

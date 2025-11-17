@@ -117,9 +117,11 @@ export default function Index() {
   };
 
   const handleUserCustomOptionChange = (pollId: number) => (index: number, value: string) => {
+    console.log('🔵 handleUserCustomOptionChange called:', { pollId, index, value });
     setUserCustomOptions(prev => {
       const currentOptions = prev[pollId] || [];
       const newOptions = currentOptions.map((opt, i) => i === index ? value : opt);
+      console.log('🔵 Updated userCustomOptions:', { pollId, newOptions });
       return {
         ...prev,
         [pollId]: newOptions
@@ -215,6 +217,7 @@ export default function Index() {
       });
 
       const data = await response.json();
+      console.log('📨 Vote response:', { status: response.status, data });
 
       if (response.status === 409) {
         toast({
@@ -245,8 +248,16 @@ export default function Index() {
         setSelectedOptions(prev => ({ ...prev, [pollId]: null }));
         setComments(prev => ({ ...prev, [pollId]: '' }));
         setCustomAnswers(prev => ({ ...prev, [pollId]: '' }));
+      } else {
+        console.error('❌ Vote failed:', data);
+        toast({
+          title: 'Ошибка',
+          description: data.error || 'Не удалось отправить голос',
+          variant: 'destructive'
+        });
       }
     } catch (error) {
+      console.error('❌ Vote error:', error);
       toast({
         title: 'Ошибка',
         description: 'Не удалось отправить голос',
