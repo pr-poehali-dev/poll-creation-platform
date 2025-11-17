@@ -46,7 +46,7 @@ export default function PollCard({
   onUserCustomOptionChange, 
   onVote 
 }: PollCardProps) {
-  const hasFilledOptions = userCustomOptions.some(opt => opt.trim() !== '');
+  const hasFilledOptions = userCustomOptions?.some(opt => opt.trim() !== '') || false;
   const isButtonDisabled = poll.allow_custom_answers 
     ? !hasFilledOptions
     : !selectedOption;
@@ -104,7 +104,7 @@ export default function PollCard({
                 ))}
               </div>
             ) : (
-              poll.options.filter(opt => opt.trim() !== '').length > 0 && (
+              poll.options && poll.options.filter(opt => opt.trim() !== '').length > 0 && (
                 <div className="space-y-3">
                   {poll.options
                     .map((option, index) => ({ option, originalIndex: index }))
@@ -168,7 +168,7 @@ export default function PollCard({
               Отправить голос
             </Button>
             <p className="text-xs text-muted-foreground text-center mt-2">
-              Debug: disabled={isButtonDisabled ? 'true' : 'false'}, hasFilledOptions={userCustomOptions.some(opt => opt.trim() !== '') ? 'true' : 'false'}
+              Debug: disabled={isButtonDisabled ? 'true' : 'false'}, hasFilledOptions={userCustomOptions?.some(opt => opt.trim() !== '') ? 'true' : 'false'}
             </p>
           </>
         ) : (
@@ -182,7 +182,7 @@ export default function PollCard({
                     <p className="text-sm text-muted-foreground mt-1">
                       Ваш ответ: <strong>{poll.user_answer.custom_answer}</strong>
                     </p>
-                  ) : poll.user_answer?.option ? (
+                  ) : poll.user_answer?.option && poll.options && poll.options[poll.user_answer.option - 1] ? (
                     <p className="text-sm text-muted-foreground mt-1">
                       Ваш выбор: <strong>{poll.options[poll.user_answer.option - 1]}</strong>
                     </p>
