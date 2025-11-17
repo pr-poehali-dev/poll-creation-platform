@@ -48,7 +48,7 @@ export default function PollCard({
 }: PollCardProps) {
   const hasFilledOptions = userCustomOptions?.some(opt => opt.trim() !== '') || false;
   const isButtonDisabled = poll.allow_custom_answers 
-    ? !hasFilledOptions && !selectedOption
+    ? !hasFilledOptions
     : !selectedOption;
   
   console.log('🎨 PollCard render:', { 
@@ -78,46 +78,13 @@ export default function PollCard({
       <CardContent className="pt-6 space-y-4">
         {!poll.user_voted ? (
           <>
-            {poll.options && poll.options.filter(opt => opt.trim() !== '').length > 0 && (
+            {poll.allow_custom_answers ? (
               <div className="space-y-3">
-                {poll.options
-                  .map((option, index) => ({ option, originalIndex: index }))
-                  .filter(item => item.option.trim() !== '')
-                  .map((item, displayIndex) => (
-                    <Button
-                      key={item.originalIndex}
-                      variant={selectedOption === item.originalIndex + 1 ? "default" : "outline"}
-                      className="w-full justify-start text-left h-auto py-4 px-6 animate-in fade-in slide-in-from-left-2"
-                      style={{ animationDelay: `${displayIndex * 100}ms` }}
-                      onClick={() => {
-                        console.log('Выбран вариант:', item.originalIndex + 1, 'Текст:', item.option);
-                        onSelectOption(item.originalIndex + 1);
-                      }}
-                    >
-                      <div className="flex items-center gap-3 w-full">
-                        <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${
-                          selectedOption === item.originalIndex + 1 
-                            ? 'bg-accent border-accent' 
-                            : 'border-muted-foreground'
-                        }`}>
-                          {selectedOption === item.originalIndex + 1 && (
-                            <Icon name="Check" size={14} className="text-accent-foreground" />
-                          )}
-                        </div>
-                        <span style={{ fontFamily: 'Open Sans, sans-serif' }}>{item.option}</span>
-                      </div>
-                    </Button>
-                  ))}
-              </div>
-            )}
-            
-            {poll.allow_custom_answers && (
-              <div className="space-y-3 pt-2">
-                <Label className="text-sm font-semibold">Или введите свои варианты (до 30 символов каждый)</Label>
+                <Label className="text-sm font-semibold">Введите свои варианты ответов (до 30 символов каждый)</Label>
                 {userCustomOptions.map((option, index) => (
                   <div key={index}>
                     <div className="flex items-center justify-between mb-1">
-                      <span className="text-xs text-muted-foreground">Свой вариант {index + 1}</span>
+                      <span className="text-xs text-muted-foreground">Вариант {index + 1}</span>
                       <span className={`text-xs font-medium ${
                         option.length > 27 
                           ? 'text-destructive' 
@@ -129,7 +96,7 @@ export default function PollCard({
                       </span>
                     </div>
                     <Input
-                      placeholder={`Введите свой вариант ${index + 1}`}
+                      placeholder={`Введите вариант ${index + 1}`}
                       maxLength={30}
                       value={option}
                       disabled={false}
@@ -141,6 +108,39 @@ export default function PollCard({
                   </div>
                 ))}
               </div>
+            ) : (
+              poll.options && poll.options.filter(opt => opt.trim() !== '').length > 0 && (
+                <div className="space-y-3">
+                  {poll.options
+                    .map((option, index) => ({ option, originalIndex: index }))
+                    .filter(item => item.option.trim() !== '')
+                    .map((item, displayIndex) => (
+                      <Button
+                        key={item.originalIndex}
+                        variant={selectedOption === item.originalIndex + 1 ? "default" : "outline"}
+                        className="w-full justify-start text-left h-auto py-4 px-6 animate-in fade-in slide-in-from-left-2"
+                        style={{ animationDelay: `${displayIndex * 100}ms` }}
+                        onClick={() => {
+                          console.log('Выбран вариант:', item.originalIndex + 1, 'Текст:', item.option);
+                          onSelectOption(item.originalIndex + 1);
+                        }}
+                      >
+                        <div className="flex items-center gap-3 w-full">
+                          <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${
+                            selectedOption === item.originalIndex + 1 
+                              ? 'bg-accent border-accent' 
+                              : 'border-muted-foreground'
+                          }`}>
+                            {selectedOption === item.originalIndex + 1 && (
+                              <Icon name="Check" size={14} className="text-accent-foreground" />
+                            )}
+                          </div>
+                          <span style={{ fontFamily: 'Open Sans, sans-serif' }}>{item.option}</span>
+                        </div>
+                      </Button>
+                    ))}
+                </div>
+              )
             )}
 
             <div className="pt-4">
