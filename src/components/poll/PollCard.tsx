@@ -80,6 +80,31 @@ export default function PollCard({
           <>
             {poll.allow_custom_answers ? (
               <div className="space-y-3">
+                {poll.options && poll.options.filter(opt => opt.trim() !== '').length > 0 && (
+                  <>
+                    <Label className="text-sm font-semibold">Быстрый выбор (нажмите на вариант)</Label>
+                    <div className="grid grid-cols-2 gap-2 mb-4">
+                      {poll.options
+                        .filter(opt => opt.trim() !== '')
+                        .map((option, index) => (
+                          <Button
+                            key={index}
+                            variant="outline"
+                            size="sm"
+                            className="h-auto py-2 px-3 text-xs justify-start"
+                            onClick={() => {
+                              const firstEmpty = userCustomOptions.findIndex(opt => opt.trim() === '');
+                              if (firstEmpty !== -1) {
+                                onUserCustomOptionChange(firstEmpty, option);
+                              }
+                            }}
+                          >
+                            {option}
+                          </Button>
+                        ))}
+                    </div>
+                  </>
+                )}
                 <Label className="text-sm font-semibold">Введите свои варианты ответов (до 30 символов каждый)</Label>
                 {userCustomOptions.map((option, index) => (
                   <div key={index}>
