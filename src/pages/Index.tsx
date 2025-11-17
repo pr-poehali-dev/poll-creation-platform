@@ -305,6 +305,15 @@ export default function Index() {
           title: 'Опрос создан!',
           description: 'Новый опрос успешно добавлен'
         });
+        
+        // Инициализация userCustomOptions для нового опроса
+        if (data.poll_id && newPoll.allow_custom_answers) {
+          setUserCustomOptions(prev => ({
+            ...prev,
+            [data.poll_id]: ['', '', '', '', '', '', '', '', '', '']
+          }));
+        }
+        
         setNewPoll({
           id: undefined,
           target_audience: '',
