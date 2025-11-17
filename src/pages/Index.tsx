@@ -173,13 +173,14 @@ export default function Index() {
     
     console.log('🎯 handleVote called:', { pollId, selectedOption, customOptions, allowCustom: poll?.allow_custom_answers });
     
+    // Для опросов с allow_custom_answers проверяем: выбран ли предустановленный вариант ИЛИ заполнены свои варианты
     if (poll?.allow_custom_answers) {
       const filledOptions = customOptions.filter(opt => opt.trim() !== '');
-      console.log('🎯 Custom answers mode, filled options:', filledOptions);
-      if (filledOptions.length === 0) {
+      console.log('🎯 Custom answers mode, filled options:', filledOptions, 'selectedOption:', selectedOption);
+      if (filledOptions.length === 0 && !selectedOption) {
         toast({
-          title: 'Заполните варианты',
-          description: 'Пожалуйста, заполните хотя бы один вариант ответа',
+          title: 'Выберите вариант',
+          description: 'Пожалуйста, выберите вариант или заполните свои',
           variant: 'destructive'
         });
         return;
@@ -195,6 +196,13 @@ export default function Index() {
       }
     }
 
+    // Если выбран предустановленный вариант в опросе с allow_custom_answers, добавляем его текст в user_custom_options
+    let finalCustomOptions = customOptions.filter(opt => opt.trim() !== '');
+    if (poll?.allow_custom_answers && selectedOption && poll.options && poll.options[selectedOption - 1]) {
+      const selectedOptionText = poll.options[selectedOption - 1];
+      finalCustomOptions = [selectedOptionText, ...finalCustomOptions];
+    }
+
     const payload = {
       action: 'vote',
       poll_id: pollId,
@@ -202,7 +210,7 @@ export default function Index() {
       selected_option: poll?.allow_custom_answers ? 0 : (selectedOption || 1),
       comment: comment,
       custom_answer: customAnswer,
-      user_custom_options: poll?.allow_custom_answers ? customOptions.filter(opt => opt.trim() !== '') : []
+      user_custom_options: poll?.allow_custom_answers ? finalCustomOptions : []
     };
     
     console.log('🚀 Sending vote payload:', payload);
