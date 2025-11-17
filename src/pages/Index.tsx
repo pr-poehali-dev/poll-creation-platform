@@ -20,6 +20,7 @@ interface Poll {
   total_responses?: number;
   user_voted?: boolean;
   statistics?: number[];
+  custom_statistics?: Array<{ option: string; votes: number }>;
   allow_custom_answers?: boolean;
   user_answer?: {
     option: number;

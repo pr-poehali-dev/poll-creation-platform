@@ -13,6 +13,7 @@ interface Poll {
   total_responses?: number;
   user_voted?: boolean;
   statistics?: number[];
+  custom_statistics?: Array<{ option: string; votes: number }>;
   allow_custom_answers?: boolean;
   user_answer?: {
     option: number;
@@ -45,7 +46,15 @@ export default function StatisticsPanel({ poll, onExport }: StatisticsPanelProps
     setDateTo('');
   };
 
-  if (!poll.user_voted || !poll.statistics) {
+  if (!poll.user_voted) {
+    return null;
+  }
+  
+  const hasStatistics = poll.allow_custom_answers 
+    ? poll.custom_statistics && poll.custom_statistics.length > 0
+    : poll.statistics && poll.statistics.length > 0;
+  
+  if (!hasStatistics) {
     return null;
   }
 
@@ -77,7 +86,11 @@ export default function StatisticsPanel({ poll, onExport }: StatisticsPanelProps
                 </div>
                 <div className="flex items-center gap-3 px-4">
                   <Icon name="TrendingUp" size={24} className="text-accent" />
-                  <span className="text-2xl font-bold min-w-[60px]">{poll.statistics.reduce((a, b) => a + b, 0)}</span>
+                  <span className="text-2xl font-bold min-w-[60px]">
+                    {poll.allow_custom_answers && poll.custom_statistics
+                      ? poll.custom_statistics.reduce((sum, stat) => sum + stat.votes, 0)
+                      : poll.statistics?.reduce((a, b) => a + b, 0) || 0}
+                  </span>
                   <span className="text-sm text-muted-foreground">Голосов</span>
                 </div>
               </div>
@@ -86,31 +99,58 @@ export default function StatisticsPanel({ poll, onExport }: StatisticsPanelProps
           <CardContent className="pt-3 pb-4 px-4 space-y-3">
         <div className="space-y-2">
           <h4 className="font-semibold text-[10px] text-muted-foreground">Распределение голосов</h4>
-          {poll.options.map((option, index) => {
-            const count = poll.statistics![index];
-            const total = poll.statistics!.reduce((a, b) => a + b, 0);
-            const percentage = getPercentage(count, total);
-            
-            return (
-              <div key={index} className="space-y-0.5">
-                <div className="flex items-center justify-between text-[10px] gap-2">
-                  <span className="text-foreground truncate flex-1" title={option}>
-                    {option}
-                  </span>
-                  <span className="font-semibold text-primary whitespace-nowrap">{percentage}%</span>
+          {poll.allow_custom_answers && poll.custom_statistics ? (
+            poll.custom_statistics.map((item, index) => {
+              const total = poll.custom_statistics!.reduce((sum, stat) => sum + stat.votes, 0);
+              const percentage = getPercentage(item.votes, total);
+              
+              return (
+                <div key={index} className="space-y-0.5">
+                  <div className="flex items-center justify-between text-[10px] gap-2">
+                    <span className="text-foreground truncate flex-1" title={item.option}>
+                      {item.option}
+                    </span>
+                    <span className="font-semibold text-primary whitespace-nowrap">{percentage}%</span>
+                  </div>
+                  <div className="h-1 bg-muted rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-to-r from-accent to-primary transition-all duration-1000 ease-out"
+                      style={{ width: `${percentage}%` }}
+                    />
+                  </div>
+                  <p className="text-[8px] text-muted-foreground">
+                    {item.votes} {item.votes === 1 ? 'голос' : item.votes < 5 ? 'голоса' : 'голосов'}
+                  </p>
                 </div>
-                <div className="h-1 bg-muted rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-gradient-to-r from-accent to-primary transition-all duration-1000 ease-out"
-                    style={{ width: `${percentage}%` }}
-                  />
+              );
+            })
+          ) : (
+            poll.options.map((option, index) => {
+              const count = poll.statistics![index];
+              const total = poll.statistics!.reduce((a, b) => a + b, 0);
+              const percentage = getPercentage(count, total);
+              
+              return (
+                <div key={index} className="space-y-0.5">
+                  <div className="flex items-center justify-between text-[10px] gap-2">
+                    <span className="text-foreground truncate flex-1" title={option}>
+                      {option}
+                    </span>
+                    <span className="font-semibold text-primary whitespace-nowrap">{percentage}%</span>
+                  </div>
+                  <div className="h-1 bg-muted rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-to-r from-accent to-primary transition-all duration-1000 ease-out"
+                      style={{ width: `${percentage}%` }}
+                    />
+                  </div>
+                  <p className="text-[8px] text-muted-foreground">
+                    {count} {count === 1 ? 'голос' : count < 5 ? 'голоса' : 'голосов'}
+                  </p>
                 </div>
-                <p className="text-[8px] text-muted-foreground">
-                  {count} {count === 1 ? 'голос' : count < 5 ? 'голоса' : 'голосов'}
-                </p>
-              </div>
-            );
-          })}
+              );
+            })
+          )}
         </div>
 
         <div className="flex gap-2 items-center">

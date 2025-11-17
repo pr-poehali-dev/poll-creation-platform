@@ -95,17 +95,33 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                             'custom_answer': user_response[2]
                         }
                         
-                        stats = []
-                        for i in range(1, 6):
+                        # Для опросов с пользовательскими вариантами — получаем статистику из user_custom_options
+                        if poll_data['allow_custom_answers']:
                             cur.execute('''
-                                SELECT COUNT(*) 
-                                FROM poll_responses 
-                                WHERE poll_id = %s AND selected_option = %s
-                            ''', (poll_id, i))
-                            count = cur.fetchone()[0]
-                            stats.append(count)
-                        
-                        poll_data['statistics'] = stats
+                                SELECT option_text, COUNT(*) as vote_count
+                                FROM user_custom_options
+                                WHERE poll_id = %s
+                                GROUP BY option_text
+                                ORDER BY vote_count DESC, option_text
+                            ''', (poll_id,))
+                            custom_stats = cur.fetchall()
+                            poll_data['custom_statistics'] = [
+                                {'option': row[0], 'votes': row[1]} 
+                                for row in custom_stats
+                            ]
+                        else:
+                            # Для обычных опросов — считаем по selected_option
+                            stats = []
+                            for i in range(1, 11):
+                                cur.execute('''
+                                    SELECT COUNT(*) 
+                                    FROM poll_responses 
+                                    WHERE poll_id = %s AND selected_option = %s
+                                ''', (poll_id, i))
+                                count = cur.fetchone()[0]
+                                stats.append(count)
+                            
+                            poll_data['statistics'] = stats
                 else:
                     poll_data['user_voted'] = False
                 
