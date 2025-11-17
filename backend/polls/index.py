@@ -260,19 +260,41 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     
                     conn.commit()
                     
-                    cur.execute('SELECT option1, option2, option3, option4, option5, option6, option7, option8, option9, option10 FROM polls WHERE id = %s', (poll_id,))
-                    poll_options = cur.fetchone()
+                    # Получаем информацию об опросе для определения типа статистики
+                    cur.execute('SELECT allow_custom_answers, option1, option2, option3, option4, option5, option6, option7, option8, option9, option10 FROM polls WHERE id = %s', (poll_id,))
+                    poll_info = cur.fetchone()
+                    allow_custom = poll_info[0]
+                    poll_options = poll_info[1:]
                     num_options = len([opt for opt in poll_options if opt])
                     
-                    stats = []
-                    for i in range(1, num_options + 1):
+                    response_data = {'success': True}
+                    
+                    # Для опросов с пользовательскими вариантами возвращаем custom_statistics
+                    if allow_custom:
                         cur.execute('''
-                            SELECT COUNT(*) 
-                            FROM poll_responses 
-                            WHERE poll_id = %s AND selected_option = %s
-                        ''', (poll_id, i))
-                        count = cur.fetchone()[0]
-                        stats.append(count)
+                            SELECT option_text, COUNT(*) as vote_count
+                            FROM user_custom_options
+                            WHERE poll_id = %s
+                            GROUP BY option_text
+                            ORDER BY vote_count DESC, option_text
+                        ''', (poll_id,))
+                        custom_stats = cur.fetchall()
+                        response_data['custom_statistics'] = [
+                            {'option': row[0], 'votes': row[1]} 
+                            for row in custom_stats
+                        ]
+                    else:
+                        # Для обычных опросов возвращаем statistics
+                        stats = []
+                        for i in range(1, num_options + 1):
+                            cur.execute('''
+                                SELECT COUNT(*) 
+                                FROM poll_responses 
+                                WHERE poll_id = %s AND selected_option = %s
+                            ''', (poll_id, i))
+                            count = cur.fetchone()[0]
+                            stats.append(count)
+                        response_data['statistics'] = stats
                     
                     cur.execute('''
                         SELECT COUNT(*) 
@@ -280,6 +302,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                         WHERE poll_id = %s
                     ''', (poll_id,))
                     total = cur.fetchone()[0]
+                    response_data['total_responses'] = total
                     
                     cur.close()
                     conn.close()
@@ -287,11 +310,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     return {
                         'statusCode': 200,
                         'headers': headers,
-                        'body': json.dumps({
-                            'success': True,
-                            'statistics': stats,
-                            'total_responses': total
-                        }),
+                        'body': json.dumps(response_data),
                         'isBase64Encoded': False
                     }
                 except psycopg2.IntegrityError:
