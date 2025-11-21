@@ -537,11 +537,13 @@ export default function Index() {
       const data = await response.json();
 
       if (data.success) {
+        // Удаляем опрос из состояния локально для мгновенного исчезновения
+        setPolls(prevPolls => prevPolls.filter(poll => poll.id !== pollId));
+        
         toast({
           title: 'Опрос отклонён',
           description: 'Опрос не прошёл модерацию и был удалён'
         });
-        fetchPolls();
       }
     } catch (error) {
       toast({
@@ -580,11 +582,17 @@ export default function Index() {
       const data = await response.json();
 
       if (data.success) {
+        // Обновляем состояние локально для мгновенного исчезновения баннера
+        setPolls(prevPolls => 
+          prevPolls.map(poll => 
+            poll.id === pollId ? { ...poll, is_approved: true } : poll
+          )
+        );
+        
         toast({
           title: 'Опрос одобрен!',
           description: 'Опрос теперь виден всем пользователям'
         });
-        fetchPolls();
       }
     } catch (error) {
       toast({
