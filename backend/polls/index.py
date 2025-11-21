@@ -49,12 +49,17 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             if get_visitor_count == 'true':
                 cur.execute('SELECT COUNT(DISTINCT user_fingerprint) FROM visitor_stats')
                 visitor_count = cur.fetchone()[0]
+                cur.execute('SELECT COALESCE(SUM(visit_count), 0) FROM visitor_stats')
+                total_visits = cur.fetchone()[0]
                 cur.close()
                 conn.close()
                 return {
                     'statusCode': 200,
                     'headers': headers,
-                    'body': json.dumps({'visitor_count': visitor_count}),
+                    'body': json.dumps({
+                        'visitor_count': visitor_count,
+                        'total_visits': total_visits
+                    }),
                     'isBase64Encoded': False
                 }
             
