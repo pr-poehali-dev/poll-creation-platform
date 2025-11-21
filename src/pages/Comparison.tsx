@@ -22,20 +22,25 @@ export default function Comparison() {
       setIsAdmin(true);
     }
     const savedComparisons = localStorage.getItem('comparisons');
+    const migrated = localStorage.getItem('comparisons_migrated');
     console.log('📦 Loading comparisons from localStorage:', savedComparisons);
     if (savedComparisons) {
       try {
         const parsed = JSON.parse(savedComparisons);
         console.log('✅ Parsed comparisons:', parsed);
         
-        // Добавляем isApproved для существующих сравнений (считаем их одобренными)
-        const updatedParsed = parsed.map((comp: any) => ({
-          ...comp,
-          isApproved: comp.isApproved !== undefined ? comp.isApproved : true
-        }));
-        
-        setComparisons(updatedParsed);
-        localStorage.setItem('comparisons', JSON.stringify(updatedParsed));
+        if (!migrated) {
+          const migratedParsed = parsed.map((comp: any) => ({
+            ...comp,
+            isApproved: comp.isApproved !== undefined ? comp.isApproved : true
+          }));
+          
+          setComparisons(migratedParsed);
+          localStorage.setItem('comparisons', JSON.stringify(migratedParsed));
+          localStorage.setItem('comparisons_migrated', 'true');
+        } else {
+          setComparisons(parsed);
+        }
       } catch (error) {
         console.error('❌ Failed to load comparisons:', error);
       }

@@ -84,7 +84,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     SELECT id, target_audience, question, 
                            option1, option2, option3, option4, option5,
                            option6, option7, option8, option9, option10,
-                           created_at, is_active, allow_custom_answers
+                           created_at, is_active, allow_custom_answers, is_approved
                     FROM polls 
                     WHERE id = %s AND is_active = true
                 ''', (poll_id,))
@@ -106,7 +106,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'question': row[2],
                     'options': options,
                     'created_at': row[13].isoformat() if row[13] else None,
-                    'allow_custom_answers': row[15] if len(row) > 15 and row[15] is not None else False
+                    'allow_custom_answers': row[15] if len(row) > 15 and row[15] is not None else False,
+                    'is_approved': row[16] if len(row) > 16 and row[16] is not None else False
                 }
                 
                 cur.execute('SELECT COUNT(*) FROM poll_responses WHERE poll_id = %s', (poll_id,))
