@@ -22,12 +22,17 @@ export default function Comparison() {
       setIsAdmin(true);
     }
     const savedComparisons = localStorage.getItem('comparisons');
+    console.log('📦 Loading comparisons from localStorage:', savedComparisons);
     if (savedComparisons) {
       try {
-        setComparisons(JSON.parse(savedComparisons));
+        const parsed = JSON.parse(savedComparisons);
+        console.log('✅ Parsed comparisons:', parsed);
+        setComparisons(parsed);
       } catch (error) {
-        console.error('Failed to load comparisons:', error);
+        console.error('❌ Failed to load comparisons:', error);
       }
+    } else {
+      console.log('⚠️ No saved comparisons found');
     }
   }, []);
 
@@ -58,6 +63,7 @@ export default function Comparison() {
   };
 
   const handleSubmit = (data: any) => {
+    console.log('🆕 Creating new comparison:', data);
     const newComparison = {
       id: Date.now(),
       contentType: data.contentType,
@@ -71,6 +77,7 @@ export default function Comparison() {
     };
 
     const updatedComparisons = [newComparison, ...comparisons];
+    console.log('💾 Saving comparisons to localStorage:', updatedComparisons);
     setComparisons(updatedComparisons);
     localStorage.setItem('comparisons', JSON.stringify(updatedComparisons));
     
