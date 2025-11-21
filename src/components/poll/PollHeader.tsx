@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button';
 import Icon from '@/components/ui/icon';
 import { useNavigate, useLocation } from 'react-router-dom';
+import VisitorCounter from '@/components/VisitorCounter';
 
 interface PollHeaderProps {
   showAdmin: boolean;
@@ -41,36 +42,39 @@ export default function PollHeader({ showAdmin, isAdmin, onToggleAdmin, onAdminL
               </Button>
             </div>
           </div>
-          <div className="flex gap-2">
-            {isAdmin ? (
-              <>
-                <Button
-                  variant={showAdmin ? "default" : "outline"}
-                  onClick={onToggleAdmin}
-                  className="gap-2"
-                >
-                  <Icon name={showAdmin ? "X" : "Plus"} size={18} />
-                  {showAdmin ? 'Закрыть' : 'Создать опрос'}
-                </Button>
+          <div className="flex flex-col gap-2 items-end">
+            <VisitorCounter />
+            <div className="flex gap-2">
+              {isAdmin ? (
+                <>
+                  <Button
+                    variant={showAdmin ? "default" : "outline"}
+                    onClick={onToggleAdmin}
+                    className="gap-2"
+                  >
+                    <Icon name={showAdmin ? "X" : "Plus"} size={18} />
+                    {showAdmin ? 'Закрыть' : 'Создать опрос'}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={onAdminLogout}
+                    className="gap-2"
+                  >
+                    <Icon name="LogOut" size={18} />
+                    Выйти
+                  </Button>
+                </>
+              ) : (
                 <Button
                   variant="outline"
-                  onClick={onAdminLogout}
+                  onClick={onAdminLogin}
                   className="gap-2"
                 >
-                  <Icon name="LogOut" size={18} />
-                  Выйти
+                  <Icon name="Lock" size={18} />
+                  Админ
                 </Button>
-              </>
-            ) : (
-              <Button
-                variant="outline"
-                onClick={onAdminLogin}
-                className="gap-2"
-              >
-                <Icon name="Lock" size={18} />
-                Админ
-              </Button>
-            )}
+              )}
+            </div>
           </div>
         </div>
       </div>

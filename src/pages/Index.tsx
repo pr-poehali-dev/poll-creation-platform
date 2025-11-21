@@ -8,6 +8,7 @@ import PollHeader from '@/components/poll/PollHeader';
 import AdminPanel from '@/components/poll/AdminPanel';
 import PollCard from '@/components/poll/PollCard';
 import StatisticsPanel from '@/components/poll/StatisticsPanel';
+import VisitorCounter from '@/components/VisitorCounter';
 
 const API_URL = 'https://functions.poehali.dev/dd334e11-802b-4eba-9f77-b038f347f2b3';
 const EXPORT_URL = 'https://functions.poehali.dev/fe6a3fd2-486b-49d2-bea7-88347a9da3b2';
@@ -74,14 +75,16 @@ export default function Index() {
 
   const fetchPolls = async () => {
     try {
-      const response = await fetch(`${API_URL}?user_fingerprint=${userFingerprint}`);
+      const isAdminUser = localStorage.getItem('isAdmin') === 'true';
+      const fingerprintParam = isAdminUser ? 'admin' : userFingerprint;
+      const response = await fetch(`${API_URL}?user_fingerprint=${fingerprintParam}`);
       const data = await response.json();
       if (data.polls && data.polls.length > 0) {
         const sortedPolls = sortPolls(data.polls, 'newest');
         
         const detailedPolls = await Promise.all(
           sortedPolls.map(async (poll) => {
-            const detailResponse = await fetch(`${API_URL}?poll_id=${poll.id}&user_fingerprint=${userFingerprint}`);
+            const detailResponse = await fetch(`${API_URL}?poll_id=${poll.id}&user_fingerprint=${fingerprintParam}`);
             return await detailResponse.json();
           })
         );

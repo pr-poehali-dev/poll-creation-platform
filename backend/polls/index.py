@@ -43,6 +43,36 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             params = event.get('queryStringParameters') or {}
             poll_id = params.get('poll_id')
             user_fingerprint = params.get('user_fingerprint')
+            get_visitor_count = params.get('get_visitor_count')
+            
+            # Обработка запроса счётчика посетителей
+            if get_visitor_count == 'true':
+                cur.execute('SELECT COUNT(DISTINCT user_fingerprint) FROM visitor_stats')
+                visitor_count = cur.fetchone()[0]
+                cur.close()
+                conn.close()
+                return {
+                    'statusCode': 200,
+                    'headers': headers,
+                    'body': json.dumps({'visitor_count': visitor_count}),
+                    'isBase64Encoded': False
+                }
+            
+            # Регистрация посетителя (если не админ)
+            if user_fingerprint and user_fingerprint != 'admin':
+                try:
+                    cur.execute('''
+                        INSERT INTO visitor_stats (user_fingerprint, first_visit, last_visit, visit_count)
+                        VALUES (%s, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1)
+                        ON CONFLICT (user_fingerprint)
+                        DO UPDATE SET 
+                            last_visit = CURRENT_TIMESTAMP,
+                            visit_count = visitor_stats.visit_count + 1
+                    ''', (user_fingerprint,))
+                    conn.commit()
+                except Exception as e:
+                    print(f'Error registering visitor: {e}')
+                    conn.rollback()
             
             if poll_id:
                 cur.execute('''
