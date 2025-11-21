@@ -3,7 +3,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import Icon from '@/components/ui/icon';
 
 type ContentType = 'song' | 'image' | 'text' | 'product' | 'video';
@@ -14,9 +13,7 @@ interface ComparisonUploadProps {
 
 export default function ComparisonUpload({ onSubmit }: ComparisonUploadProps) {
   const [contentType, setContentType] = useState<ContentType>('song');
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [items, setItems] = useState<Array<{ name: string; url: string }>>([
+  const [items, setItems] = useState<Array<{ name: string; url: string }}>([
     { name: '', url: '' },
     { name: '', url: '' }
   ]);
@@ -52,13 +49,11 @@ export default function ComparisonUpload({ onSubmit }: ComparisonUploadProps) {
     
     onSubmit({
       contentType,
-      title,
-      description,
       items: filledItems
     });
   };
 
-  const isValid = title.trim() !== '' && items.filter(item => item.name.trim() !== '').length >= 2;
+  const isValid = items.filter(item => item.name.trim() !== '').length >= 2;
 
   return (
     <Card className="border-2">
@@ -84,31 +79,6 @@ export default function ComparisonUpload({ onSubmit }: ComparisonUploadProps) {
               </Button>
             ))}
           </div>
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="title">Название сравнения</Label>
-          <Input
-            id="title"
-            placeholder="Например: Какая песня лучше?"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            maxLength={100}
-          />
-          <p className="text-xs text-muted-foreground text-right">{title.length}/100</p>
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="description">Описание (необязательно)</Label>
-          <Textarea
-            id="description"
-            placeholder="Дополнительная информация о сравнении"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            maxLength={200}
-            rows={3}
-          />
-          <p className="text-xs text-muted-foreground text-right">{description.length}/200</p>
         </div>
 
         <div className="space-y-4">
