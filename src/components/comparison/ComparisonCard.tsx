@@ -46,21 +46,17 @@ export default function ComparisonCard({ comparison, onVote, onDelete, isAdmin }
 
   return (
     <Card className="border-2">
-      <CardHeader className="bg-muted/30">
-        <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2">
-            <Icon name={getContentIcon(comparison.contentType) as any} size={20} />
-            Сравнение: {getContentLabel(comparison.contentType)}
-          </CardTitle>
-          {isAdmin && onDelete && (
+      {isAdmin && onDelete && (
+        <CardHeader className="bg-muted/30">
+          <div className="flex items-center justify-end">
             <Button variant="destructive" size="sm" onClick={onDelete} className="gap-2">
               <Icon name="Trash2" size={16} />
               Удалить
             </Button>
-          )}
-        </div>
-      </CardHeader>
-      <CardContent className="pt-6 space-y-4">
+          </div>
+        </CardHeader>
+      )}
+      <CardContent className={isAdmin && onDelete ? "pt-6 space-y-4" : "pt-6 space-y-4"}>
         <div className="text-sm text-muted-foreground mb-4">
           Всего голосов: {comparison.totalVotes}
         </div>
