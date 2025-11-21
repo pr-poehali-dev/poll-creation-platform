@@ -143,23 +143,7 @@ export default function PollCard({
               )
             )}
 
-            <div className="pt-4">
-              <Label htmlFor="comment" className="text-sm text-muted-foreground">
-                Комментарий (необязательно, до 100 символов)
-              </Label>
-              <Textarea
-                id="comment"
-                placeholder="Поделитесь своим мнением..."
-                maxLength={100}
-                value={comment}
-                onChange={(e) => onCommentChange(e.target.value)}
-                className="mt-2 resize-none"
-                rows={3}
-              />
-              <p className="text-xs text-muted-foreground mt-1 text-right">
-                {comment.length}/100
-              </p>
-            </div>
+
 
             <Button 
               onClick={() => {
