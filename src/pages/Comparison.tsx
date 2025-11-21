@@ -81,6 +81,8 @@ export default function Comparison() {
     setComparisons(updatedComparisons);
     localStorage.setItem('comparisons', JSON.stringify(updatedComparisons));
     
+    setShowAdmin(false);
+    
     toast({
       title: 'Сравнение создано!',
       description: 'Ваше сравнение успешно сохранено'
@@ -127,7 +129,7 @@ export default function Comparison() {
       <PollHeader 
         showAdmin={showAdmin}
         isAdmin={isAdmin}
-        onToggleAdmin={() => isAdmin && setShowAdmin(!showAdmin)}
+        onToggleAdmin={() => setShowAdmin(!showAdmin)}
         onAdminLogin={() => setShowAdminLogin(true)}
         onAdminLogout={handleAdminLogout}
       />
@@ -171,6 +173,12 @@ export default function Comparison() {
         )}
 
         <div className="max-w-7xl mx-auto space-y-8">
+          {showAdmin && (
+            <div>
+              <ComparisonUpload onSubmit={handleSubmit} />
+            </div>
+          )}
+
           {comparisons.length > 0 && (
             <div className="space-y-6">
               {comparisons.map((comparison) => (
@@ -184,10 +192,6 @@ export default function Comparison() {
               ))}
             </div>
           )}
-
-          <div>
-            <ComparisonUpload onSubmit={handleSubmit} />
-          </div>
         </div>
       </main>
     </div>

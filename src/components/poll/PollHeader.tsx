@@ -16,9 +16,7 @@ export default function PollHeader({ showAdmin, isAdmin, onToggleAdmin, onAdminL
   const location = useLocation();
 
   const handleToggle = () => {
-    if (location.pathname === '/') {
-      onToggleAdmin();
-    }
+    onToggleAdmin();
   };
 
   return (
@@ -51,16 +49,14 @@ export default function PollHeader({ showAdmin, isAdmin, onToggleAdmin, onAdminL
           <div className="flex flex-col gap-2 items-end">
             <VisitorCounter />
             <div className="flex gap-2">
-              {location.pathname === '/' && (
-                <Button
-                  variant={showAdmin ? "default" : "outline"}
-                  onClick={handleToggle}
-                  className="gap-2"
-                >
-                  <Icon name={showAdmin ? "X" : "Plus"} size={18} />
-                  {showAdmin ? 'Закрыть' : 'Создать опрос'}
-                </Button>
-              )}
+              <Button
+                variant={showAdmin ? "default" : "outline"}
+                onClick={handleToggle}
+                className="gap-2"
+              >
+                <Icon name={showAdmin ? "X" : "Plus"} size={18} />
+                {showAdmin ? 'Закрыть' : (location.pathname === '/' ? 'Создать опрос' : 'Создать сравнение')}
+              </Button>
               {isAdmin ? (
                 <Button
                   variant="outline"
