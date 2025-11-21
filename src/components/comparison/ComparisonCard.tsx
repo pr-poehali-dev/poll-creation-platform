@@ -99,7 +99,7 @@ export default function ComparisonCard({ comparison, onVote, onDelete, isAdmin }
                 <div className="space-y-1">
                   <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
                     <div 
-                      className="bg-primary h-full transition-all duration-500"
+                      className="bg-green-500 h-full transition-all duration-500"
                       style={{ width: `${percentage}%` }}
                     />
                   </div>
