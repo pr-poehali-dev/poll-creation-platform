@@ -24,6 +24,7 @@ interface Poll {
   statistics?: number[];
   custom_statistics?: Array<{ option: string; votes: number }>;
   allow_custom_answers?: boolean;
+  is_approved?: boolean;
   user_answer?: {
     option: number;
     comment: string;
@@ -303,7 +304,8 @@ export default function Index() {
         target_audience: newPoll.target_audience.slice(0, 30),
         question: newPoll.question.slice(0, 100),
         options: filledOptions,
-        allow_custom_answers: newPoll.allow_custom_answers
+        allow_custom_answers: newPoll.allow_custom_answers,
+        is_admin: isAdmin
       };
       
       console.log('Creating poll with payload:', payload);
@@ -324,7 +326,7 @@ export default function Index() {
       if (data.success) {
         toast({
           title: 'Опрос создан!',
-          description: 'Новый опрос успешно добавлен'
+          description: isAdmin ? 'Новый опрос успешно добавлен' : 'Опрос отправлен на модерацию'
         });
         
         // Инициализация userCustomOptions для нового опроса
@@ -529,6 +531,37 @@ export default function Index() {
     setShowAdmin(false);
   };
 
+  const handleApprovePoll = async (pollId: number) => {
+    try {
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          action: 'approve',
+          poll_id: pollId
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        toast({
+          title: 'Опрос одобрен!',
+          description: 'Опрос теперь виден всем пользователям'
+        });
+        fetchPolls();
+      }
+    } catch (error) {
+      toast({
+        title: 'Ошибка',
+        description: 'Не удалось одобрить опрос',
+        variant: 'destructive'
+      });
+    }
+  };
+
   const handleExport = (pollId: number, format: 'pdf' | 'excel') => {
     const url = `${EXPORT_URL}?poll_id=${pollId}&format=${format}`;
     window.open(url, '_blank');
@@ -555,7 +588,7 @@ export default function Index() {
       <PollHeader 
         showAdmin={showAdmin}
         isAdmin={isAdmin}
-        onToggleAdmin={() => isAdmin && setShowAdmin(!showAdmin)}
+        onToggleAdmin={() => setShowAdmin(!showAdmin)}
         onAdminLogin={() => setShowAdminLogin(true)}
         onAdminLogout={handleAdminLogout}
       />
@@ -577,6 +610,25 @@ export default function Index() {
         <div className="max-w-7xl mx-auto space-y-8">
           {polls.map((poll) => (
             <div key={poll.id}>
+              {isAdmin && !poll.is_approved && (
+                <div className="mb-4 p-4 bg-yellow-100 dark:bg-yellow-900/20 border-2 border-yellow-500 rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Icon name="AlertCircle" size={20} className="text-yellow-600 dark:text-yellow-400" />
+                      <span className="font-medium text-yellow-800 dark:text-yellow-200">
+                        Опрос ожидает модерации
+                      </span>
+                    </div>
+                    <Button
+                      onClick={() => handleApprovePoll(poll.id)}
+                      className="gap-2"
+                    >
+                      <Icon name="Check" size={18} />
+                      Одобрить
+                    </Button>
+                  </div>
+                </div>
+              )}
               <div className="grid lg:grid-cols-2 gap-6">
                 <div>
                   <PollCard

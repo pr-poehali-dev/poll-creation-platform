@@ -170,15 +170,27 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'isBase64Encoded': False
                 }
             else:
-                cur.execute('''
-                    SELECT id, target_audience, question, 
-                           option1, option2, option3, option4, option5,
-                           option6, option7, option8, option9, option10,
-                           allow_custom_answers
-                    FROM polls 
-                    WHERE is_active = true
-                    ORDER BY created_at DESC
-                ''')
+                # Админы видят все опросы (включая неодобренные), обычные пользователи только одобренные
+                if user_fingerprint == 'admin':
+                    cur.execute('''
+                        SELECT id, target_audience, question, 
+                               option1, option2, option3, option4, option5,
+                               option6, option7, option8, option9, option10,
+                               allow_custom_answers, is_approved
+                        FROM polls 
+                        WHERE is_active = true
+                        ORDER BY created_at DESC
+                    ''')
+                else:
+                    cur.execute('''
+                        SELECT id, target_audience, question, 
+                               option1, option2, option3, option4, option5,
+                               option6, option7, option8, option9, option10,
+                               allow_custom_answers, is_approved
+                        FROM polls 
+                        WHERE is_active = true AND is_approved = true
+                        ORDER BY created_at DESC
+                    ''')
                 
                 polls = []
                 for row in cur.fetchall():
@@ -188,7 +200,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                         'target_audience': row[1],
                         'question': row[2],
                         'options': options,
-                        'allow_custom_answers': row[13] if len(row) > 13 and row[13] is not None else False
+                        'allow_custom_answers': row[13] if len(row) > 13 and row[13] is not None else False,
+                        'is_approved': row[14] if len(row) > 14 and row[14] is not None else False
                     }
                     
                     if user_fingerprint:
@@ -403,12 +416,16 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 else:
                     options_padded = options + [None] * (10 - len(options))
                 
+                # Опросы от админа одобряются автоматически, от обычных пользователей требуют модерации
+                is_admin_user = body_data.get('is_admin', False)
+                is_approved = is_admin_user
+                
                 cur.execute('''
                     INSERT INTO polls 
-                    (target_audience, question, option1, option2, option3, option4, option5, option6, option7, option8, option9, option10, allow_custom_answers)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    (target_audience, question, option1, option2, option3, option4, option5, option6, option7, option8, option9, option10, allow_custom_answers, is_approved)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                     RETURNING id
-                ''', (target_audience, question, *options_padded, allow_custom_answers))
+                ''', (target_audience, question, *options_padded, allow_custom_answers, is_approved))
                 
                 poll_id = cur.fetchone()[0]
                 conn.commit()
@@ -545,6 +562,57 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 cur.execute('''
                     UPDATE polls 
                     SET is_active = false
+                    WHERE id = %s
+                ''', (poll_id,))
+                
+                if cur.rowcount == 0:
+                    cur.close()
+                    conn.close()
+                    return {
+                        'statusCode': 404,
+                        'headers': headers,
+                        'body': json.dumps({'error': 'Poll not found'}),
+                        'isBase64Encoded': False
+                    }
+                
+                conn.commit()
+                cur.close()
+                conn.close()
+                
+                return {
+                    'statusCode': 200,
+                    'headers': headers,
+                    'body': json.dumps({'success': True}),
+                    'isBase64Encoded': False
+                }
+            
+            elif action == 'approve':
+                poll_id = body_data.get('poll_id')
+                
+                if not poll_id:
+                    return {
+                        'statusCode': 400,
+                        'headers': headers,
+                        'body': json.dumps({'error': 'Poll ID required'}),
+                        'isBase64Encoded': False
+                    }
+                
+                try:
+                    poll_id = int(poll_id)
+                except (ValueError, TypeError):
+                    return {
+                        'statusCode': 400,
+                        'headers': headers,
+                        'body': json.dumps({'error': 'Invalid poll ID'}),
+                        'isBase64Encoded': False
+                    }
+                
+                conn = get_db_connection()
+                cur = conn.cursor()
+                
+                cur.execute('''
+                    UPDATE polls 
+                    SET is_approved = true
                     WHERE id = %s
                 ''', (poll_id,))
                 
