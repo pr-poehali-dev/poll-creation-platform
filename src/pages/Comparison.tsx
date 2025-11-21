@@ -21,6 +21,14 @@ export default function Comparison() {
     if (isAdminAuthenticated()) {
       setIsAdmin(true);
     }
+    const savedComparisons = localStorage.getItem('comparisons');
+    if (savedComparisons) {
+      try {
+        setComparisons(JSON.parse(savedComparisons));
+      } catch (error) {
+        console.error('Failed to load comparisons:', error);
+      }
+    }
   }, []);
 
   const handleAdminLogin = () => {
@@ -62,7 +70,9 @@ export default function Comparison() {
       userVoted: false
     };
 
-    setComparisons([newComparison, ...comparisons]);
+    const updatedComparisons = [newComparison, ...comparisons];
+    setComparisons(updatedComparisons);
+    localStorage.setItem('comparisons', JSON.stringify(updatedComparisons));
     
     toast({
       title: 'Сравнение создано!',
@@ -71,7 +81,7 @@ export default function Comparison() {
   };
 
   const handleVote = (comparisonId: number, itemIndex: number) => {
-    setComparisons(comparisons.map(comp => {
+    const updatedComparisons = comparisons.map(comp => {
       if (comp.id === comparisonId && !comp.userVoted) {
         const updatedItems = comp.items.map((item: any, idx: number) => 
           idx === itemIndex ? { ...item, votes: item.votes + 1 } : item
@@ -84,7 +94,10 @@ export default function Comparison() {
         };
       }
       return comp;
-    }));
+    });
+
+    setComparisons(updatedComparisons);
+    localStorage.setItem('comparisons', JSON.stringify(updatedComparisons));
 
     toast({
       title: 'Голос учтён!',
@@ -93,7 +106,9 @@ export default function Comparison() {
   };
 
   const handleDelete = (comparisonId: number) => {
-    setComparisons(comparisons.filter(comp => comp.id !== comparisonId));
+    const updatedComparisons = comparisons.filter(comp => comp.id !== comparisonId);
+    setComparisons(updatedComparisons);
+    localStorage.setItem('comparisons', JSON.stringify(updatedComparisons));
     toast({
       title: 'Сравнение удалено',
       description: 'Сравнение успешно удалено'
