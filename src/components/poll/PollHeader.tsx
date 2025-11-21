@@ -47,14 +47,16 @@ export default function PollHeader({ showAdmin, isAdmin, onToggleAdmin, onAdminL
             <div className="flex gap-2">
               {isAdmin ? (
                 <>
-                  <Button
-                    variant={showAdmin ? "default" : "outline"}
-                    onClick={onToggleAdmin}
-                    className="gap-2"
-                  >
-                    <Icon name={showAdmin ? "X" : "Plus"} size={18} />
-                    {showAdmin ? 'Закрыть' : 'Создать опрос'}
-                  </Button>
+                  {location.pathname === '/' && (
+                    <Button
+                      variant={showAdmin ? "default" : "outline"}
+                      onClick={onToggleAdmin}
+                      className="gap-2"
+                    >
+                      <Icon name={showAdmin ? "X" : "Plus"} size={18} />
+                      {showAdmin ? 'Закрыть' : 'Создать опрос'}
+                    </Button>
+                  )}
                   <Button
                     variant="outline"
                     onClick={onAdminLogout}
