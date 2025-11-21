@@ -16,7 +16,7 @@ export default function PollHeader({ showAdmin, isAdmin, onToggleAdmin, onAdminL
   const location = useLocation();
 
   return (
-    <header className="border-b bg-card">
+    <header className="border-b bg-card sticky top-0 z-50 shadow-sm">
       <div className="container mx-auto px-4 py-6">
         <div className="flex items-center justify-between">
           <div>
