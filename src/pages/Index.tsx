@@ -82,16 +82,22 @@ export default function Index() {
       if (data.polls && data.polls.length > 0) {
         const sortedPolls = sortPolls(data.polls, 'newest');
         
-        const detailedPolls = await Promise.all(
-          sortedPolls.map(async (poll) => {
+        const detailedPolls: Poll[] = [];
+        for (const poll of sortedPolls) {
+          try {
             const detailResponse = await fetch(`${API_URL}?poll_id=${poll.id}&user_fingerprint=${fingerprintParam}`);
-            return await detailResponse.json();
-          })
-        );
+            if (detailResponse.ok) {
+              const pollData = await detailResponse.json();
+              detailedPolls.push(pollData);
+            }
+            await new Promise(resolve => setTimeout(resolve, 50));
+          } catch (error) {
+            console.error(`Failed to load poll ${poll.id}:`, error);
+          }
+        }
         
         setPolls(detailedPolls);
         
-        // Инициализация пользовательских вариантов для опросов с allow_custom_answers
         const initialUserOptions: Record<number, string[]> = {};
         detailedPolls.forEach(poll => {
           if (poll.allow_custom_answers) {
