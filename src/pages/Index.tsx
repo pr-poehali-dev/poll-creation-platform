@@ -9,6 +9,7 @@ import AdminPanel from '@/components/poll/AdminPanel';
 import PollCard from '@/components/poll/PollCard';
 import StatisticsPanel from '@/components/poll/StatisticsPanel';
 import VisitorCounter from '@/components/VisitorCounter';
+import { setAdminAuth, isAdminAuthenticated } from '@/utils/adminAuth';
 
 const API_URL = 'https://functions.poehali.dev/dd334e11-802b-4eba-9f77-b038f347f2b3';
 const EXPORT_URL = 'https://functions.poehali.dev/fe6a3fd2-486b-49d2-bea7-88347a9da3b2';
@@ -63,8 +64,7 @@ export default function Index() {
   const userFingerprint = getUserFingerprint();
 
   useEffect(() => {
-    const savedAdminStatus = localStorage.getItem('isAdmin');
-    if (savedAdminStatus === 'true') {
+    if (isAdminAuthenticated()) {
       setIsAdmin(true);
     }
   }, []);
@@ -75,7 +75,7 @@ export default function Index() {
 
   const fetchPolls = async () => {
     try {
-      const isAdminUser = localStorage.getItem('isAdmin') === 'true';
+      const isAdminUser = isAdminAuthenticated();
       const fingerprintParam = isAdminUser ? 'admin' : userFingerprint;
       const response = await fetch(`${API_URL}?user_fingerprint=${fingerprintParam}`);
       const data = await response.json();
@@ -138,7 +138,7 @@ export default function Index() {
     const correctPassword = 'admin2024';
     if (adminPassword === correctPassword) {
       setIsAdmin(true);
-      localStorage.setItem('isAdmin', 'true');
+      setAdminAuth(true);
       setShowAdminLogin(false);
       setAdminPassword('');
       toast({
@@ -156,7 +156,7 @@ export default function Index() {
 
   const handleAdminLogout = () => {
     setIsAdmin(false);
-    localStorage.removeItem('isAdmin');
+    setAdminAuth(false);
     setShowAdmin(false);
     setEditMode(false);
     toast({
