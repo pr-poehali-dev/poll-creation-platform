@@ -38,7 +38,7 @@ export default function PollHeader({ showAdmin, isAdmin, onToggleAdmin, onAdminL
                 className="gap-2"
               >
                 <Icon name="GitCompare" size={18} />
-                Сравнение
+                Сравнения
               </Button>
             </div>
           </div>
