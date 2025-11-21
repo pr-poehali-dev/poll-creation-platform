@@ -27,7 +27,15 @@ export default function Comparison() {
       try {
         const parsed = JSON.parse(savedComparisons);
         console.log('✅ Parsed comparisons:', parsed);
-        setComparisons(parsed);
+        
+        // Добавляем isApproved для существующих сравнений (считаем их одобренными)
+        const updatedParsed = parsed.map((comp: any) => ({
+          ...comp,
+          isApproved: comp.isApproved !== undefined ? comp.isApproved : true
+        }));
+        
+        setComparisons(updatedParsed);
+        localStorage.setItem('comparisons', JSON.stringify(updatedParsed));
       } catch (error) {
         console.error('❌ Failed to load comparisons:', error);
       }
@@ -73,7 +81,8 @@ export default function Comparison() {
         votes: 0
       })),
       totalVotes: 0,
-      userVoted: false
+      userVoted: false,
+      isApproved: isAdmin
     };
 
     const updatedComparisons = [newComparison, ...comparisons];
@@ -85,7 +94,7 @@ export default function Comparison() {
     
     toast({
       title: 'Сравнение создано!',
-      description: 'Ваше сравнение успешно сохранено'
+      description: isAdmin ? 'Ваше сравнение успешно добавлено' : 'Сравнение отправлено на модерацию'
     });
   };
 
@@ -123,6 +132,22 @@ export default function Comparison() {
       description: 'Сравнение успешно удалено'
     });
   };
+
+  const handleApprove = (comparisonId: number) => {
+    const updatedComparisons = comparisons.map(comp => 
+      comp.id === comparisonId ? { ...comp, isApproved: true } : comp
+    );
+    setComparisons(updatedComparisons);
+    localStorage.setItem('comparisons', JSON.stringify(updatedComparisons));
+    toast({
+      title: 'Сравнение одобрено!',
+      description: 'Сравнение теперь видно всем пользователям'
+    });
+  };
+
+  const visibleComparisons = isAdmin 
+    ? comparisons 
+    : comparisons.filter(comp => comp.isApproved);
 
   return (
     <div className="min-h-screen bg-background">
@@ -179,16 +204,36 @@ export default function Comparison() {
             </div>
           )}
 
-          {comparisons.length > 0 && (
+          {visibleComparisons.length > 0 && (
             <div className="space-y-6">
-              {comparisons.map((comparison) => (
-                <ComparisonCard
-                  key={comparison.id}
-                  comparison={comparison}
-                  onVote={(itemIndex) => handleVote(comparison.id, itemIndex)}
-                  onDelete={isAdmin ? () => handleDelete(comparison.id) : undefined}
-                  isAdmin={isAdmin}
-                />
+              {visibleComparisons.map((comparison) => (
+                <div key={comparison.id}>
+                  {isAdmin && !comparison.isApproved && (
+                    <div className="mb-4 p-4 bg-yellow-100 dark:bg-yellow-900/20 border-2 border-yellow-500 rounded-lg">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Icon name="AlertCircle" size={20} className="text-yellow-600 dark:text-yellow-400" />
+                          <span className="font-medium text-yellow-800 dark:text-yellow-200">
+                            Сравнение ожидает модерации
+                          </span>
+                        </div>
+                        <Button
+                          onClick={() => handleApprove(comparison.id)}
+                          className="gap-2"
+                        >
+                          <Icon name="Check" size={18} />
+                          Одобрить
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                  <ComparisonCard
+                    comparison={comparison}
+                    onVote={(itemIndex) => handleVote(comparison.id, itemIndex)}
+                    onDelete={isAdmin ? () => handleDelete(comparison.id) : undefined}
+                    isAdmin={isAdmin}
+                  />
+                </div>
               ))}
             </div>
           )}
