@@ -13,7 +13,7 @@ interface ComparisonUploadProps {
 
 export default function ComparisonUpload({ onSubmit }: ComparisonUploadProps) {
   const [contentType, setContentType] = useState<ContentType>('song');
-  const [items, setItems] = useState<Array<{ name: string; url: string }}>([
+  const [items, setItems] = useState<Array<{ name: string, url: string }>>([
     { name: '', url: '' },
     { name: '', url: '' }
   ]);
