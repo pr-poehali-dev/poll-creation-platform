@@ -145,6 +145,18 @@ export default function Comparison() {
     });
   };
 
+  const handleReject = (comparisonId: number) => {
+    if (!confirm('Вы уверены, что хотите отклонить это сравнение? Оно будет удалено.')) return;
+    
+    const updatedComparisons = comparisons.filter(comp => comp.id !== comparisonId);
+    setComparisons(updatedComparisons);
+    localStorage.setItem('comparisons', JSON.stringify(updatedComparisons));
+    toast({
+      title: 'Сравнение отклонено',
+      description: 'Сравнение не прошло модерацию и было удалено'
+    });
+  };
+
   const visibleComparisons = isAdmin 
     ? comparisons 
     : comparisons.filter(comp => comp.isApproved);
@@ -217,13 +229,23 @@ export default function Comparison() {
                             Сравнение ожидает модерации
                           </span>
                         </div>
-                        <Button
-                          onClick={() => handleApprove(comparison.id)}
-                          className="gap-2"
-                        >
-                          <Icon name="Check" size={18} />
-                          Одобрить
-                        </Button>
+                        <div className="flex gap-2">
+                          <Button
+                            onClick={() => handleApprove(comparison.id)}
+                            className="gap-2"
+                          >
+                            <Icon name="Check" size={18} />
+                            Одобрить
+                          </Button>
+                          <Button
+                            onClick={() => handleReject(comparison.id)}
+                            variant="destructive"
+                            className="gap-2"
+                          >
+                            <Icon name="X" size={18} />
+                            Не одобряю
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   )}

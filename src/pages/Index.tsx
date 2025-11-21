@@ -519,6 +519,39 @@ export default function Index() {
     }
   };
 
+  const handleRejectPoll = async (pollId: number) => {
+    if (!confirm('Вы уверены, что хотите отклонить этот опрос? Он будет удалён.')) return;
+
+    try {
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          action: 'delete',
+          poll_id: pollId
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        toast({
+          title: 'Опрос отклонён',
+          description: 'Опрос не прошёл модерацию и был удалён'
+        });
+        fetchPolls();
+      }
+    } catch (error) {
+      toast({
+        title: 'Ошибка',
+        description: 'Не удалось отклонить опрос',
+        variant: 'destructive'
+      });
+    }
+  };
+
   const handleCancelEdit = () => {
     setNewPoll({
       id: undefined,
@@ -619,13 +652,23 @@ export default function Index() {
                         Опрос ожидает модерации
                       </span>
                     </div>
-                    <Button
-                      onClick={() => handleApprovePoll(poll.id)}
-                      className="gap-2"
-                    >
-                      <Icon name="Check" size={18} />
-                      Одобрить
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={() => handleApprovePoll(poll.id)}
+                        className="gap-2"
+                      >
+                        <Icon name="Check" size={18} />
+                        Одобрить
+                      </Button>
+                      <Button
+                        onClick={() => handleRejectPoll(poll.id)}
+                        variant="destructive"
+                        className="gap-2"
+                      >
+                        <Icon name="X" size={18} />
+                        Не одобряю
+                      </Button>
+                    </div>
                   </div>
                 </div>
               )}
