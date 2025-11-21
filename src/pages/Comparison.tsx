@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import PollHeader from '@/components/poll/PollHeader';
 import ComparisonUpload from '@/components/comparison/ComparisonUpload';
-import ComparisonStatistics from '@/components/comparison/ComparisonStatistics';
+import ComparisonCard from '@/components/comparison/ComparisonCard';
 import { useToast } from '@/hooks/use-toast';
 import { setAdminAuth, isAdminAuthenticated } from '@/utils/adminAuth';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
@@ -14,6 +14,7 @@ export default function Comparison() {
   const [showAdminLogin, setShowAdminLogin] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [adminPassword, setAdminPassword] = useState('');
+  const [comparisons, setComparisons] = useState<any[]>([]);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -21,20 +22,6 @@ export default function Comparison() {
       setIsAdmin(true);
     }
   }, []);
-
-  const [mockComparison] = useState({
-    id: 1,
-    title: 'Какая песня лучше?',
-    description: 'Выберите вашу любимую песню из этих трёх',
-    contentType: 'song',
-    items: [
-      { name: 'Песня А', url: 'https://example.com/song-a', votes: 45 },
-      { name: 'Песня Б', url: 'https://example.com/song-b', votes: 30 },
-      { name: 'Песня В', url: 'https://example.com/song-c', votes: 25 }
-    ],
-    totalVotes: 100,
-    userVoted: true
-  });
 
   const handleAdminLogin = () => {
     const correctPassword = 'admin2024';
@@ -63,10 +50,53 @@ export default function Comparison() {
   };
 
   const handleSubmit = (data: any) => {
-    console.log('Создание сравнения:', data);
+    const newComparison = {
+      id: Date.now(),
+      contentType: data.contentType,
+      items: data.items.map((item: any) => ({
+        name: item.name,
+        url: item.url,
+        votes: 0
+      })),
+      totalVotes: 0,
+      userVoted: false
+    };
+
+    setComparisons([newComparison, ...comparisons]);
+    
     toast({
       title: 'Сравнение создано!',
       description: 'Ваше сравнение успешно сохранено'
+    });
+  };
+
+  const handleVote = (comparisonId: number, itemIndex: number) => {
+    setComparisons(comparisons.map(comp => {
+      if (comp.id === comparisonId && !comp.userVoted) {
+        const updatedItems = comp.items.map((item: any, idx: number) => 
+          idx === itemIndex ? { ...item, votes: item.votes + 1 } : item
+        );
+        return {
+          ...comp,
+          items: updatedItems,
+          totalVotes: comp.totalVotes + 1,
+          userVoted: true
+        };
+      }
+      return comp;
+    }));
+
+    toast({
+      title: 'Голос учтён!',
+      description: 'Спасибо за участие в сравнении'
+    });
+  };
+
+  const handleDelete = (comparisonId: number) => {
+    setComparisons(comparisons.filter(comp => comp.id !== comparisonId));
+    toast({
+      title: 'Сравнение удалено',
+      description: 'Сравнение успешно удалено'
     });
   };
 
@@ -118,15 +148,25 @@ export default function Comparison() {
           </div>
         )}
 
-        <div className="max-w-7xl mx-auto">
-          <div className="grid lg:grid-cols-2 gap-6">
-            <div>
-              <ComparisonUpload onSubmit={handleSubmit} />
-            </div>
-            <div>
-              <ComparisonStatistics data={mockComparison} />
-            </div>
+        <div className="max-w-7xl mx-auto space-y-8">
+          <div>
+            <ComparisonUpload onSubmit={handleSubmit} />
           </div>
+
+          {comparisons.length > 0 && (
+            <div className="space-y-6">
+              <h2 className="text-2xl font-bold">Сравнения</h2>
+              {comparisons.map((comparison) => (
+                <ComparisonCard
+                  key={comparison.id}
+                  comparison={comparison}
+                  onVote={(itemIndex) => handleVote(comparison.id, itemIndex)}
+                  onDelete={isAdmin ? () => handleDelete(comparison.id) : undefined}
+                  isAdmin={isAdmin}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </main>
     </div>
