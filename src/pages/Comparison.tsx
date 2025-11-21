@@ -149,13 +149,8 @@ export default function Comparison() {
         )}
 
         <div className="max-w-7xl mx-auto space-y-8">
-          <div>
-            <ComparisonUpload onSubmit={handleSubmit} />
-          </div>
-
           {comparisons.length > 0 && (
             <div className="space-y-6">
-              <h2 className="text-2xl font-bold">Сравнения</h2>
               {comparisons.map((comparison) => (
                 <ComparisonCard
                   key={comparison.id}
@@ -167,6 +162,10 @@ export default function Comparison() {
               ))}
             </div>
           )}
+
+          <div>
+            <ComparisonUpload onSubmit={handleSubmit} />
+          </div>
         </div>
       </main>
     </div>
